@@ -542,7 +542,7 @@
   async function fetchActuatorData() {
     try {
       const res = await fetch(
-        "http://10.176.17.171:8080/fishtelligent/api/get_actuator.php"
+        "https://fishtelligent-production.up.railway.app/api/get_actuator.php""
       );
       if (!res.ok) throw new Error("HTTP error " + res.status);
       const data = await res.json();
