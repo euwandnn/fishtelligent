@@ -1,0 +1,57 @@
+{
+  "decision_threshold": 0.45535545748845974,
+  "feature_cols": [
+    "temperature",
+    "pH",
+    "dissolved_oxygen",
+    "turbidity",
+    "salinity",
+    "water_level",
+    "temperature_rolling_mean",
+    "pH_rolling_mean",
+    "dissolved_oxygen_rolling_mean",
+    "turbidity_rolling_mean",
+    "salinity_rolling_mean",
+    "water_level_rolling_mean",
+    "temperature_rolling_std",
+    "pH_rolling_std",
+    "dissolved_oxygen_rolling_std",
+    "turbidity_rolling_std",
+    "salinity_rolling_std",
+    "water_level_rolling_std",
+    "temperature_diff",
+    "pH_diff",
+    "dissolved_oxygen_diff",
+    "turbidity_diff",
+    "salinity_diff",
+    "water_level_diff"
+  ],
+  "thresholds": {
+    "temperature": {
+      "min": 27.6,
+      "max": 30.2
+    },
+    "pH": {
+      "min": 7.0,
+      "max": 7.91
+    },
+    "dissolved_oxygen": {
+      "min": 5.0,
+      "max": 9.0
+    },
+    "turbidity": {
+      "min": 0.0,
+      "max": 25.0
+    },
+    "salinity": {
+      "min": 28.0,
+      "max": 34.0
+    },
+    "water_level": {
+      "min": 40.0,
+      "max": 95.0
+    }
+  },
+  "trained_on": "synthetic_dataset_v2",
+  "notes": "Trained on synthetic data based on Chapter 2 literature thresholds (Astari et al., 2025). Retrain with real sensor data after calibration is complete."
+}

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Fishtelligent | Actuators</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ── Actuator-specific styles ── */
+    .actuator-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    @media (min-width: 768px) {
+      .actuator-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .actuator-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .actuator-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .actuator-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      background: var(--border);
+      transition: background 0.3s;
+    }
+
+    .actuator-card.running::before {
+      background: var(--ok);
+      box-shadow: 0 0 8px var(--ok);
+    }
+
+    .actuator-card.stopped::before {
+      background: var(--text-muted);
+    }
+
+    .actuator-card.running {
+      border-color: rgba(45,212,191,0.3);
+      box-shadow: 0 0 20px rgba(45,212,191,0.08);
+    }
+
+    .actuator-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .actuator-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .actuator-card.running .actuator-icon {
+      background: var(--teal-900);
+      border-color: rgba(45,212,191,0.3);
+    }
+
+    .status-pill {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      transition: all 0.3s;
+    }
+
+    .status-pill.on {
+      background: var(--ok-bg);
+      color: var(--ok);
+      border: 1px solid rgba(45,212,191,0.3);
+    }
+
+    .status-pill.off {
+      background: var(--bg-elevated);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .status-pill .pill-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      transition: all 0.3s;
+    }
+
+    .status-pill.on .pill-dot {
+      animation: pulse-dot 1.2s ease-in-out infinite;
+      box-shadow: 0 0 4px var(--ok);
+    }
+
+    .actuator-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.2px;
+    }
+
+    .actuator-channel {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .actuator-trigger {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      padding: 8px 10px;
+      background: var(--bg-elevated);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .actuator-trigger span {
+      color: var(--teal-400);
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    /* Running animation bar */
+    .actuator-bar {
+      height: 3px;
+      border-radius: 2px;
+      background: var(--border-subtle);
+      overflow: hidden;
+    }
+
+    .actuator-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--ok);
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    .actuator-card.running .actuator-bar-fill {
+      width: 100%;
+      animation: bar-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes bar-pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    /* Summary stats */
+    .summary-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .summary-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      text-align: center;
+    }
+
+    .summary-num {
+      font-family: var(--font-mono);
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .summary-num.green { color: var(--ok); }
+    .summary-num.gray  { color: var(--text-muted); }
+    .summary-num.warn  { color: var(--warn); }
+
+    .summary-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      font-weight: 600;
+    }
+
+    /* Last triggered */
+    .last-trigger {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      text-align: right;
+    }
+
+    /* 220V warning badge */
+    .ac-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      background: rgba(248,113,113,0.1);
+      color: var(--danger);
+      border: 1px solid rgba(248,113,113,0.3);
+      margin-left: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ── SIDEBAR (desktop only) ── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <div class="brand-icon">🐟</div>
+        <div>
+          <div class="brand-name">Fishtelligent</div>
+          <div class="brand-sub">Aquaculture Monitor</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="index.html"          class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="fish-monitoring.html" class="nav-link"><span class="nav-icon">🐠</span> Fish Monitoring</a>
+      <a href="water-quality.html"  class="nav-link"><span class="nav-icon">💧</span> Water Quality</a>
+      <a href="actuators.html"      class="nav-link active"><span class="nav-icon">⚙️</span> Actuators</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sys-status"><div class="pulse-dot"></div> System online</div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <div class="main-content">
+
+    <header class="topbar">
+      <div class="topbar-brand">
+        <div class="topbar-brand-icon">⚙️</div>
+        <div>
+          <div class="topbar-title">Fishtelligent</div>
+          <div class="topbar-subtitle">Actuator Control</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="live-badge"><div class="dot"></div> Live</div>
+        <div class="time-chip" id="clock">--:--:--</div>
+      </div>
+    </header>
+
+    <main class="page-content">
+
+      <div class="page-header">
+        <h1 class="page-title">Actuator Status</h1>
+        <p class="page-desc">Real-time status of all automated actuators. Triggers automatically based on sensor readings.</p>
+      </div>
+
+      <!-- Summary Row -->
+      <div class="summary-row">
+        <div class="summary-card">
+          <div class="summary-num green" id="runningCount">0</div>
+          <div class="summary-label">Running</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-num gray" id="stoppedCount">6</div>
+          <div class="summary-label">Stopped</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-num" id="totalCount" style="color:var(--text-secondary)">6</div>
+          <div class="summary-label">Total</div>
+        </div>
+      </div>
+
+      <!-- Actuator Grid -->
+      <div class="actuator-grid">
+
+        <!-- K1: Water Pump -->
+        <div class="actuator-card stopped" id="card-pump">
+          <div class="actuator-top">
+            <div class="actuator-icon" id="icon-pump">💧</div>
+            <div class="status-pill off" id="pill-pump">
+              <div class="pill-dot"></div>
+              <span id="label-pump">OFF</span>
+            </div>
+          </div>
+          <div>
+            <div class="actuator-name">Water Pump</div>
+            <div class="actuator-channel">K1 — GPIO16</div>
+          </div>
+          <div class="actuator-trigger">
+            Fills tank when level &lt; <span>15 cm</span>
+          </div>
+          <div class="actuator-bar"><div class="actuator-bar-fill" id="bar-pump"></div></div>
+          <div class="last-trigger" id="time-pump">Last: --</div>
+        </div>
+
+        <!-- K2: Solenoid Drain Valve -->
+        <div class="actuator-card stopped" id="card-drain">
+          <div class="actuator-top">
+            <div class="actuator-icon" id="icon-drain">🚰</div>
+            <div class="status-pill off" id="pill-drain">
+              <div class="pill-dot"></div>
+              <span id="label-drain">OFF</span>
+            </div>
+          </div>
+          <div>
+            <div class="actuator-name">Drain Valve</div>
+            <div class="actuator-channel">K2 — GPIO17</div>
+          </div>
+          <div class="actuator-trigger">
+            Drains tank when level &gt; <span>40 cm</span>
+          </div>
+          <div class="actuator-bar"><div class="actuator-bar-fill" id="bar-drain"></div></div>
+          <div class="last-trigger" id="time-drain">Last: --</div>
+        </div>
+
+        <!-- K3: Heater -->
+        <div class="actuator-card stopped" id="card-heater">
+          <div class="actuator-top">
+            <div class="actuator-icon" id="icon-heater">🔥</div>
+            <div class="status-pill off" id="pill-heater">
+              <div class="pill-dot"></div>
+              <span id="label-heater">OFF</span>
+            </div>
+          </div>
+          <div>
+            <div class="actuator-name">
+              Heater
+              <span class="ac-badge">220V AC</span>
+            </div>
+            <div class="actuator-channel">K3 — GPIO18</div>
+          </div>
+          <div class="actuator-trigger">
+            Heats water when temp &lt; <span>26°C</span>
+          </div>
+          <div class="actuator-bar"><div class="actuator-bar-fill" id="bar-heater"></div></div>
+          <div class="last-trigger" id="time-heater">Last: --</div>
+        </div>
+
+        <!-- K4: pH Down Pump -->
+        <div class="actuator-card stopped" id="card-ph_down">
+          <div class="actuator-top">
+            <div class="actuator-icon" id="icon-ph_down">⬇️</div>
+            <div class="status-pill off" id="pill-ph_down">
+              <div class="pill-dot"></div>
+              <span id="label-ph_down">OFF</span>
+            </div>
+          </div>
+          <div>
+            <div class="actuator-name">pH Down Pump</div>
+            <div class="actuator-channel">K4 — GPIO19</div>
+          </div>
+          <div class="actuator-trigger">
+            Doses pH Down when pH &gt; <span>8.3</span>
+          </div>
+          <div class="actuator-bar"><div class="actuator-bar-fill" id="bar-ph_down"></div></div>
+          <div class="last-trigger" id="time-ph_down">Last: --</div>
+        </div>
+
+        <!-- K5: pH Up Pump -->
+        <div class="actuator-card stopped" id="card-ph_up">
+          <div class="actuator-top">
+            <div class="actuator-icon" id="icon-ph_up">⬆️</div>
+            <div class="status-pill off" id="pill-ph_up">
+              <div class="pill-dot"></div>
+              <span id="label-ph_up">OFF</span>
+            </div>
+          </div>
+          <div>
+            <div class="actuator-name">pH Up Pump</div>
+            <div class="actuator-channel">K5 — GPIO21</div>
+          </div>
+          <div class="actuator-trigger">
+            Doses pH Up when pH &lt; <span>7.8</span>
+          </div>
+          <div class="actuator-bar"><div class="actuator-bar-fill" id="bar-ph_up"></div></div>
+          <div class="last-trigger" id="time-ph_up">Last: --</div>
+        </div>
+
+        <!-- K6: Air Pump -->
+        <div class="actuator-card stopped" id="card-aerator">
+          <div class="actuator-top">
+            <div class="actuator-icon" id="icon-aerator">🫧</div>
+            <div class="status-pill off" id="pill-aerator">
+              <div class="pill-dot"></div>
+              <span id="label-aerator">OFF</span>
+            </div>
+          </div>
+          <div>
+            <div class="actuator-name">Air Pump</div>
+            <div class="actuator-channel">K6 — GPIO22</div>
+          </div>
+          <div class="actuator-trigger">
+            Aerates when DO &lt; <span>6 mg/L</span>
+          </div>
+          <div class="actuator-bar"><div class="actuator-bar-fill" id="bar-aerator"></div></div>
+          <div class="last-trigger" id="time-aerator">Last: --</div>
+        </div>
+
+      </div>
+
+      <!-- Info card -->
+      <div class="card" style="margin-top:0;">
+        <div class="card-header">
+          <div class="card-title"><span class="card-title-icon">ℹ️</span> How Actuators Work</div>
+        </div>
+        <div class="card-body">
+          <div class="param-row">
+            <span class="param-name">Control method</span>
+            <span class="param-value" style="font-size:12px">Automatic via ESP32 + Relay</span>
+          </div>
+          <div class="param-row">
+            <span class="param-name">Update interval</span>
+            <span class="param-value" style="font-size:12px">Every 3 seconds</span>
+          </div>
+          <div class="param-row">
+            <span class="param-name">pH pump mode</span>
+            <span class="param-value" style="font-size:12px">2s pulse / 30s wait</span>
+          </div>
+          <div class="param-row">
+            <span class="param-name">Heater voltage</span>
+            <span class="param-value" style="font-size:12px; color:var(--danger)">220V AC ⚠️</span>
+          </div>
+          <div class="param-row" style="border:none">
+            <span class="param-name">All others</span>
+            <span class="param-value" style="font-size:12px">12V DC</span>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ── BOTTOM NAV (mobile) ── -->
+  <nav class="bottom-nav">
+    <a href="index.html"           class="nav-item"><span class="nav-icon">📊</span>Dashboard</a>
+    <a href="fish-monitoring.html" class="nav-item"><span class="nav-icon">🐠</span>Fish</a>
+    <a href="water-quality.html"   class="nav-item"><span class="nav-icon">💧</span>Water</a>
+    <a href="actuators.html"       class="nav-item active"><span class="nav-icon">⚙️</span>Actuators</a>
+  </nav>
+
+</div>
+
+<script>
+  /* ── Clock ── */
+  function tick() {
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+  }
+  setInterval(tick, 1000); tick();
+
+  /* ── Actuator keys matching database columns ── */
+  const ACTUATORS = [
+    { key: 'pump',    label: 'Water Pump'    },
+    { key: 'drain',   label: 'Drain Valve'   },
+    { key: 'heater',  label: 'Heater'        },
+    { key: 'ph_down', label: 'pH Down Pump'  },
+    { key: 'ph_up',   label: 'pH Up Pump'    },
+    { key: 'aerator', label: 'Air Pump'      },
+  ];
+
+  /* ── Last triggered times ── */
+  const lastTriggered = {};
+
+  /* ── Update one actuator card ── */
+  function updateActuator(key, isOn) {
+    const card  = document.getElementById(`card-${key}`);
+    const pill  = document.getElementById(`pill-${key}`);
+    const label = document.getElementById(`label-${key}`);
+    const bar   = document.getElementById(`bar-${key}`);
+    const time  = document.getElementById(`time-${key}`);
+
+    if (!card) return;
+
+    card.classList.remove('running', 'stopped');
+    pill.classList.remove('on', 'off');
+
+    if (isOn) {
+      card.classList.add('running');
+      pill.classList.add('on');
+      label.textContent = 'ON';
+      bar.style.width = '100%';
+
+      // Record last triggered time
+      lastTriggered[key] = new Date();
+      time.textContent = 'Last: just now';
+    } else {
+      card.classList.add('stopped');
+      pill.classList.add('off');
+      label.textContent = 'OFF';
+      bar.style.width = '0%';
+
+      // Show last triggered time
+      if (lastTriggered[key]) {
+        const diff = Math.floor((new Date() - lastTriggered[key]) / 1000);
+        if (diff < 60)       time.textContent = `Last: ${diff}s ago`;
+        else if (diff < 3600) time.textContent = `Last: ${Math.floor(diff/60)}m ago`;
+        else                  time.textContent = `Last: ${Math.floor(diff/3600)}h ago`;
+      }
+    }
+  }
+
+  /* ── Update summary counts ── */
+  function updateSummary(data) {
+    let running = 0;
+    ACTUATORS.forEach(a => {
+      if (parseInt(data[a.key]) === 1) running++;
+    });
+    document.getElementById('runningCount').textContent = running;
+    document.getElementById('stoppedCount').textContent = ACTUATORS.length - running;
+    document.getElementById('totalCount').textContent   = ACTUATORS.length;
+  }
+
+  /* ── Fetch from server ── */
+  async function fetchActuatorData() {
+    try {
+      const res = await fetch(
+        "http://10.176.17.171:8080/fishtelligent/api/get_actuator.php"
+      );
+      if (!res.ok) throw new Error("HTTP error " + res.status);
+      const data = await res.json();
+      if (!data || data.error) return;
+
+      // Update each actuator
+      ACTUATORS.forEach(a => {
+        updateActuator(a.key, parseInt(data[a.key]) === 1);
+      });
+
+      // Update summary
+      updateSummary(data);
+
+    } catch (err) {
+      console.error('Fetch error:', err);
+    }
+  }
+
+  /* ── Update relative times every 10s ── */
+  function updateTimes() {
+    ACTUATORS.forEach(a => {
+      const time = document.getElementById(`time-${a.key}`);
+      const card = document.getElementById(`card-${a.key}`);
+      if (lastTriggered[a.key] && !card.classList.contains('running')) {
+        const diff = Math.floor((new Date() - lastTriggered[a.key]) / 1000);
+        if (diff < 60)        time.textContent = `Last: ${diff}s ago`;
+        else if (diff < 3600) time.textContent = `Last: ${Math.floor(diff/60)}m ago`;
+        else                  time.textContent = `Last: ${Math.floor(diff/3600)}h ago`;
+      }
+    });
+  }
+
+  setInterval(fetchActuatorData, 3000);
+  setInterval(updateTimes, 10000);
+  fetchActuatorData();
+</script>
+
+</body>
+</html>
