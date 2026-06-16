@@ -181,7 +181,7 @@
 
   async function fetchWaterData() {
     try {
-      const res = await fetch("https://strongman-produce-unchain.ngrok-free.dev/fishtelligent/api/get_latest_data.php");
+      const res = await fetch("https://fishtelligent-production.up.railway.app/api/get_latest_data.php")
       const data = await res.json();
       if (!data || data.error) return;
 
