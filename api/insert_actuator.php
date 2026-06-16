@@ -2,7 +2,7 @@
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 
-$conn = new mysqli("localhost", "root", "", "fishtelligent_db");
+$conn = new mysqli("shinkansen.proxy.rlwy.net", "root", "XIvzNZWrfjjaxhAjKDrIJYZJTlxnfsJu", "railway", 49967);
 if ($conn->connect_error) {
     die(json_encode(["error" => "Connection failed"]));
 }
