@@ -5,7 +5,7 @@ ini_set('display_errors', 1);
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
 
-$conn = new mysqli("localhost", "root", "", "fishtelligent_db");
+$conn = new mysqli("shinkansen.proxy.rlwy.net", "root", "XIvzNZWrfjjaxhAjKDrIJYZJTlxnfsJu", "railway", 49967);
 
 if ($conn->connect_error) {
     http_response_code(500);
