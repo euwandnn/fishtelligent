@@ -7,9 +7,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <div class="app-shell">
-
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-logo">
@@ -31,9 +29,7 @@
       <div class="sys-status"><div class="pulse-dot"></div> System online</div>
     </div>
   </aside>
-
   <div class="main-content">
-
     <header class="topbar">
       <div class="topbar-brand">
         <div class="topbar-brand-icon">💧</div>
@@ -47,13 +43,11 @@
         <div class="time-chip" id="clock">--:--:--</div>
       </div>
     </header>
-
     <main class="page-content">
       <div class="page-header">
         <h1 class="page-title">Water Quality</h1>
         <p class="page-desc">Live environmental readings from all connected sensors.</p>
       </div>
-
       <!-- ── ML ANOMALY DETECTION CARD ── -->
       <div class="card" id="mlCard" style="border-left: 4px solid #2196F3; margin-bottom: 1rem;">
         <div class="card-header">
@@ -95,7 +89,6 @@
           </div>
         </div>
       </div>
-
       <!-- Stat Bar -->
       <div class="stat-grid">
         <div class="stat-card ok" id="tempStat">
@@ -124,7 +117,6 @@
           <div class="stat-foot">28–34 g/L</div>
         </div>
       </div>
-
       <span id="tempReading" style="display:none;"><span id="tempDot"></span><span id="tempValue"></span></span>
       <span id="phReading" style="display:none;"><span id="phDot"></span><span id="phValue"></span></span>
       <span id="levelReading" style="display:none;"><span id="levelDot"></span><span id="levelValue"></span></span>
@@ -132,7 +124,6 @@
       <span id="salinityReading" style="display:none;"><span id="salinityDot"></span><span id="salinityValue"></span></span>
       <span id="overallBadge" style="display:none;"></span>
       <span id="alertBox" style="display:none;"></span>
-
       <!-- Safe Range Reference -->
       <div class="card">
         <div class="card-header">
@@ -155,25 +146,20 @@
           </div>
         </div>
       </div>
-
     </main>
   </div>
-
   <nav class="bottom-nav">
     <a href="index.html"           class="nav-item"><span class="nav-icon">📊</span>Dashboard</a>
     <a href="fish-monitoring.html" class="nav-item"><span class="nav-icon">🐠</span>Fish</a>
     <a href="water-quality.html"   class="nav-item active"><span class="nav-icon">💧</span>Water</a>
     <a href="actuators.html"       class="nav-item"><span class="nav-icon">⚙️</span>Actuators</a>
   </nav>
-
 </div>
-
 <script>
   // ─── CONFIG ───────────────────────────────────
   const SENSOR_API = "https://fishtelligent-production.up.railway.app/api/get_latest_data.php";
   const ML_API     = "https://fishtelligent-ml-api.onrender.com/predict/manual";
   // ──────────────────────────────────────────────
-
   // ─── Locally-correct safe ranges ───────────────
   // The ML API's threshold_rule mode currently checks turbidity against
   // 0-25, but this system reports turbidity as "% clear" (higher = better),
@@ -187,25 +173,31 @@
     turbidity:   [40, 100],
     salinity:    [28, 34]
   };
-
+  // The ESP32 sends water_level as a raw centimeter reading
+  // (TANK_HEIGHT - distance), not a percentage. Convert it here using the
+  // tank's physical height so it can be checked against the 40-95% range
+  // used by the stat card, reading dot, and Safe Range Reference table.
+  const TANK_HEIGHT_CM = 30.48; // 12 in tall tank
+  function cmToPercent(cm) {
+    if (isNaN(cm)) return NaN;
+    const pct = (cm / TANK_HEIGHT_CM) * 100;
+    return Math.max(0, Math.min(100, pct));
+  }
   function isWithinSafeRange(parameter, value) {
     const range = SAFE_RANGES[parameter];
     if (!range || isNaN(value)) return false;
     return value >= range[0] && value <= range[1];
   }
-
   function tick() {
     document.getElementById('clock').textContent = new Date().toLocaleTimeString();
   }
   setInterval(tick, 1000); tick();
-
   function setStat(statId, statValId, value, ok) {
     document.getElementById(statValId).textContent = value;
     const card = document.getElementById(statId);
     card.classList.remove('ok', 'warn', 'alert');
     card.classList.add(ok ? 'ok' : 'alert');
   }
-
   function setReading(readingId, dotId, ok) {
     const el  = document.getElementById(readingId);
     const dot = document.getElementById(dotId);
@@ -214,56 +206,46 @@
     if (ok) { el.classList.add('ok'); }
     else    { el.classList.add('bad'); dot.classList.add('danger'); }
   }
-
   async function fetchSensorData() {
     try {
       const res  = await fetch(SENSOR_API, { cache: "no-store" });
       if (!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
       if (!data || data.error) return;
-
-      const temp     = parseFloat(data.temperature);
-      const ph       = parseFloat(data.ph);
-      const lvl      = parseFloat(data.water_level);
-      const turb     = parseFloat(data.turbidity);
-      const salinity = parseFloat(data.salinity);
-
+      const temp       = parseFloat(data.temperature);
+      const ph         = parseFloat(data.ph);
+      const lvlCm      = parseFloat(data.water_level);
+      const lvl        = cmToPercent(lvlCm);
+      const turb       = parseFloat(data.turbidity);
+      const salinity   = parseFloat(data.salinity);
       const fmt = (v, d, u) => isNaN(v) ? '--' : v.toFixed(d) + u;
-
       document.getElementById("tempValue").textContent      = fmt(temp,     1, " °C");
       document.getElementById("phValue").textContent        = fmt(ph,       2, "");
       document.getElementById("levelValue").textContent     = fmt(lvl,      1, " %");
       document.getElementById("turbidityValue").textContent = fmt(turb,     1, " %");
       document.getElementById("salinityValue").textContent  = fmt(salinity, 1, " g/L");
-
       const tempOk     = isWithinSafeRange('temperature', temp);
       const phOk       = isWithinSafeRange('ph', ph);
       const lvlOk      = isWithinSafeRange('water_level', lvl);
       const turbOk     = isWithinSafeRange('turbidity', turb);
       const salinityOk = isWithinSafeRange('salinity', salinity);
-
       setStat('tempStat',     'tempStatVal',     fmt(temp,     1, ' °C'),  tempOk);
       setStat('phStat',       'phStatVal',       fmt(ph,       2, ''),     phOk);
       setStat('wlStat',       'wlStatVal',       fmt(lvl,      1, ' %'),   lvlOk);
       setStat('turbStat',     'turbStatVal',     fmt(turb,     1, ' %'), turbOk);
       setStat('salinityStat', 'salinityStatVal', fmt(salinity, 1, ' g/L'), salinityOk);
-
       setReading('tempReading',     'tempDot',      tempOk);
       setReading('phReading',       'phDot',        phOk);
       setReading('levelReading',    'levelDot',     lvlOk);
       setReading('turbReading',     'turbidityDot', turbOk);
       setReading('salinityReading', 'salinityDot',  salinityOk);
-
       const anyBad = !tempOk || !phOk || !lvlOk || !turbOk || !salinityOk;
       document.getElementById('alertBox').style.display = anyBad ? 'flex' : 'none';
-
       const badge = document.getElementById('overallBadge');
       badge.className   = 'badge ' + (anyBad ? 'danger' : 'ok');
       badge.textContent = anyBad ? 'Alert' : 'All Normal';
-
     } catch (err) { console.error("Sensor fetch error:", err); }
   }
-
   async function fetchMLPrediction() {
     const banner  = document.getElementById('mlStatusBanner');
     const badge   = document.getElementById('mlBadge');
@@ -272,13 +254,11 @@
     const lastChk = document.getElementById('mlLastCheck');
     const trigBox = document.getElementById('mlTriggeredBox');
     const trigList= document.getElementById('mlTriggeredList');
-
     try {
       const sensorRes = await fetch(SENSOR_API, { cache: "no-store" });
       if (!sensorRes.ok) throw new Error("Sensor API error");
       const sensorData = await sensorRes.json();
       if (!sensorData || sensorData.error) throw new Error("No sensor data");
-
       const res = await fetch(ML_API, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
@@ -288,15 +268,12 @@
           dissolved_oxygen: parseFloat(sensorData.dissolved_oxygen),
           turbidity:        parseFloat(sensorData.turbidity),
           salinity:         parseFloat(sensorData.salinity),
-          water_level:      parseFloat(sensorData.water_level)
+          water_level:      cmToPercent(parseFloat(sensorData.water_level))
         })
       });
-
       if (!res.ok) throw new Error("ML API HTTP " + res.status);
       const data = await res.json();
-
       lastChk.textContent = new Date().toLocaleTimeString();
-
       // The ML API's threshold_rule mode uses its own (sometimes wrong,
       // e.g. turbidity 0-25) safe ranges. Re-check each triggered
       // parameter against this system's real ranges before trusting it.
@@ -307,7 +284,6 @@
       const isAnomaly = data.method === 'threshold_rule'
         ? triggered.length > 0
         : data.is_anomaly;
-
       if (isAnomaly) {
         banner.style.background = '#ffebee';
         banner.style.color      = '#c62828';
@@ -318,7 +294,6 @@
         badge.textContent = '⚠️ Anomaly Detected';
         method.textContent = data.method === 'threshold_rule' ? '📏 Threshold Rule' : '🤖 Isolation Forest';
         score.textContent = data.anomaly_score !== null ? data.anomaly_score.toFixed(4) : 'N/A (rule-based)';
-
         if (triggered.length > 0) {
           trigBox.style.display = 'block';
           trigList.innerHTML = triggered.map(t => {
@@ -344,7 +319,6 @@
         trigBox.style.display = 'none';
         trigList.innerHTML    = '';
       }
-
     } catch (err) {
       banner.style.background = '#fff8e1';
       banner.style.color      = '#f57f17';
@@ -354,14 +328,11 @@
       console.warn("ML API error:", err);
     }
   }
-
   if (Notification.permission === 'default') {
     Notification.requestPermission();
   }
-
   setInterval(fetchSensorData, 3000);
   fetchSensorData();
-
   setInterval(fetchMLPrediction, 5000);
   fetchMLPrediction();
 </script>
