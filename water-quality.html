@@ -174,6 +174,26 @@
   const ML_API     = "https://fishtelligent-ml-api.onrender.com/predict/manual";
   // ──────────────────────────────────────────────
 
+  // ─── Locally-correct safe ranges ───────────────
+  // The ML API's threshold_rule mode currently checks turbidity against
+  // 0-25, but this system reports turbidity as "% clear" (higher = better),
+  // with 40-100 being the real safe zone. These ranges match the stat
+  // cards / Safe Range Reference table below and are used to filter out
+  // false positives the ML API sends for turbidity.
+  const SAFE_RANGES = {
+    temperature: [27.6, 30.2],
+    ph:          [7.0, 7.91],
+    water_level: [40, 95],
+    turbidity:   [40, 100],
+    salinity:    [28, 34]
+  };
+
+  function isWithinSafeRange(parameter, value) {
+    const range = SAFE_RANGES[parameter];
+    if (!range || isNaN(value)) return false;
+    return value >= range[0] && value <= range[1];
+  }
+
   function tick() {
     document.getElementById('clock').textContent = new Date().toLocaleTimeString();
   }
@@ -216,11 +236,11 @@
       document.getElementById("turbidityValue").textContent = fmt(turb,     1, " %");
       document.getElementById("salinityValue").textContent  = fmt(salinity, 1, " g/L");
 
-      const tempOk     = !isNaN(temp)     && temp     >= 27.6 && temp     <= 30.2;
-      const phOk       = !isNaN(ph)       && ph       >= 7.0  && ph       <= 7.91;
-      const lvlOk      = !isNaN(lvl)      && lvl      >= 40   && lvl      <= 95;
-      const turbOk     = !isNaN(turb)     && turb     >= 40   && turb     <= 100;
-      const salinityOk = !isNaN(salinity) && salinity >= 28   && salinity <= 34;
+      const tempOk     = isWithinSafeRange('temperature', temp);
+      const phOk       = isWithinSafeRange('ph', ph);
+      const lvlOk      = isWithinSafeRange('water_level', lvl);
+      const turbOk     = isWithinSafeRange('turbidity', turb);
+      const salinityOk = isWithinSafeRange('salinity', salinity);
 
       setStat('tempStat',     'tempStatVal',     fmt(temp,     1, ' °C'),  tempOk);
       setStat('phStat',       'phStatVal',       fmt(ph,       2, ''),     phOk);
@@ -277,29 +297,49 @@
 
       lastChk.textContent = new Date().toLocaleTimeString();
 
-      if (data.is_anomaly) {
+      // The ML API's threshold_rule mode uses its own (sometimes wrong,
+      // e.g. turbidity 0-25) safe ranges. Re-check each triggered
+      // parameter against this system's real ranges before trusting it.
+      let triggered = data.triggered || [];
+      if (triggered.length > 0) {
+        triggered = triggered.filter(t => !isWithinSafeRange(t.parameter, parseFloat(t.value)));
+      }
+      const isAnomaly = data.method === 'threshold_rule'
+        ? triggered.length > 0
+        : data.is_anomaly;
+
+      if (isAnomaly) {
         banner.style.background = '#ffebee';
         banner.style.color      = '#c62828';
-        banner.textContent      = data.message;
+        banner.textContent      = data.method === 'threshold_rule'
+          ? `⚠️ ${triggered.length} parameter(s) out of safe range!`
+          : data.message;
         badge.className   = 'badge danger';
         badge.textContent = '⚠️ Anomaly Detected';
         method.textContent = data.method === 'threshold_rule' ? '📏 Threshold Rule' : '🤖 Isolation Forest';
         score.textContent = data.anomaly_score !== null ? data.anomaly_score.toFixed(4) : 'N/A (rule-based)';
 
-        if (data.triggered && data.triggered.length > 0) {
+        if (triggered.length > 0) {
           trigBox.style.display = 'block';
-          trigList.innerHTML = data.triggered.map(t => `
+          trigList.innerHTML = triggered.map(t => {
+            const range = SAFE_RANGES[t.parameter];
+            const safeText = range ? `${range[0]}–${range[1]}` : `${t.safe_min}–${t.safe_max}`;
+            return `
             <div style="background:#fff3f3;border:1px solid #ffcdd2;border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:0.85rem;color:#7a1f1f;">
-              <strong style="color:#5c1414;">${t.parameter.replace('_',' ').toUpperCase()}</strong>: ${t.value} (safe: ${t.safe_min}–${t.safe_max})
-            </div>`).join('');
+              <strong style="color:#5c1414;">${t.parameter.replace('_',' ').toUpperCase()}</strong>: ${t.value} (safe: ${safeText})
+            </div>`;
+          }).join('');
+        } else {
+          trigBox.style.display = 'none';
+          trigList.innerHTML    = '';
         }
       } else {
         banner.style.background = '#e8f5e9';
         banner.style.color      = '#2e7d32';
-        banner.textContent      = data.message;
+        banner.textContent      = data.method === 'threshold_rule' ? '✅ All parameters within safe range.' : data.message;
         badge.className   = 'badge ok';
         badge.textContent = '✅ Normal';
-        method.textContent = '🤖 Isolation Forest';
+        method.textContent = data.method === 'threshold_rule' ? '📏 Threshold Rule' : '🤖 Isolation Forest';
         score.textContent  = data.anomaly_score !== null ? data.anomaly_score.toFixed(4) : '--';
         trigBox.style.display = 'none';
         trigList.innerHTML    = '';
