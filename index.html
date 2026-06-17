@@ -64,7 +64,7 @@
         <div class="stat-card ok" id="phStat">
           <div class="stat-label">pH Level</div>
           <div class="stat-value"><span id="phValue">--</span></div>
-          <div class="stat-foot">7.8–8.3</div>
+          <div class="stat-foot">7.0–7.91</div>
         </div>
         <div class="stat-card ok" id="wlStat">
           <div class="stat-label">Water Level</div>
@@ -173,7 +173,7 @@
       document.getElementById('turb2').textContent     = fmt(turb,     1, ' %');
       document.getElementById('salinity2').textContent = fmt(salinity, 1, ' ppt');
       const tempOk     = !isNaN(temp)     && temp     >= 26   && temp     <= 30;
-      const phOk       = !isNaN(ph)       && ph       >= 7.8  && ph       <= 8.3;
+      const phOk       = !isNaN(ph)       && ph       >= 7.0  && ph       <= 7.91;
       const wlOk       = !isNaN(wl)       && wl       >= 21.3 && wl       <= 29.0;
       const turbOk     = !isNaN(turb)     && turb     >= 40   && turb     <= 100;
       const salinityOk = !isNaN(salinity) && salinity >= 28   && salinity <= 35;
