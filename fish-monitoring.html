@@ -28,20 +28,6 @@
       gap: .5rem;
       flex-wrap: wrap;
     }
-    .cam-mode-wrap {
-      display: flex;
-      align-items: center;
-      gap: .4rem;
-      background: rgba(0,0,0,.25);
-      border: 1px solid var(--border, #243044);
-      border-radius: 8px;
-      padding: .25rem .5rem;
-    }
-    .cam-mode-label {
-      font-size: 11px;
-      color: var(--muted, #6b7a99);
-      white-space: nowrap;
-    }
     .cam-ip-wrap {
       display: flex;
       align-items: center;
@@ -76,7 +62,6 @@
     }
     .btn-cam:hover { opacity: .85; }
     .btn-connect    { background: var(--teal-500, #14b8a6); color: #fff; }
-    .btn-ai         { background: #6366f1; color: #fff; }
     .btn-snapshot   { background: rgba(255,255,255,.08); color: var(--text, #e2e8f0); border: 1px solid var(--border, #243044); }
     .stream-wrap {
       position: relative;
@@ -125,18 +110,6 @@
     }
     .stream-live-badge.visible { opacity: 1; }
     .stream-live-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: #ef4444; animation: blink 1.2s infinite; }
-    .ai-badge {
-      position: absolute;
-      top: 12px; right: 12px;
-      background: rgba(99,102,241,.85);
-      border-radius: 20px;
-      padding: .25rem .65rem;
-      font-size: 11px;
-      font-weight: 700;
-      color: #fff;
-      display: none;
-    }
-    .ai-badge.visible { display: flex; align-items: center; gap: .4rem; }
     @keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
     .stream-ts {
       position: absolute;
@@ -177,15 +150,6 @@
       pointer-events: none;
     }
     .snap-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    select#modeSelect {
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--text, #e2e8f0);
-      font-size: 12px;
-      cursor: pointer;
-    }
-    select#modeSelect option { background: #1a2332; }
   </style>
 </head>
 <body>
@@ -245,25 +209,10 @@
           <div class="card-title"><span class="card-title-icon">📷</span> Live Tank Camera</div>
           <div class="camera-controls">
 
-            <!-- Mode Selector -->
-            <div class="cam-mode-wrap">
-              <span class="cam-mode-label">Mode:</span>
-              <select id="modeSelect" onchange="onModeChange()">
-                <option value="esp32">ESP32-CAM</option>
-                <option value="ai">🤖 AI Detection</option>
-              </select>
-            </div>
-
-            <!-- ESP32 IP Input (shown in ESP32 mode) -->
-            <div class="cam-ip-wrap" id="ipWrap">
+            <!-- ESP32 IP Input -->
+            <div class="cam-ip-wrap">
               <span class="cam-ip-label">ESP32 IP:</span>
               <input id="camIpInput" type="text" placeholder="192.168.x.x" value="" spellcheck="false">
-            </div>
-
-            <!-- AI Server IP Input (shown in AI mode) -->
-            <div class="cam-ip-wrap" id="aiWrap" style="display:none;">
-              <span class="cam-ip-label">AI Server:</span>
-              <input id="aiIpInput" type="text" placeholder="localhost:5000" value="localhost:5000" spellcheck="false">
             </div>
 
             <button class="btn-cam btn-connect" onclick="connectCamera()">Connect</button>
@@ -275,20 +224,15 @@
           <div class="stream-overlay" id="streamOverlay">
             <div class="overlay-icon">📷</div>
             <div class="overlay-text">
-              Select a mode above and press <strong>Connect</strong>.<br><br>
-              <span style="font-size:12px;color:#6b7a99;">
-                🐟 <b>ESP32-CAM</b> — direct camera feed<br>
-                🤖 <b>AI Detection</b> — YOLOv8 fish detection (run fish_server.py first)
-              </span>
+              Enter the ESP32-CAM IP above and press <strong>Connect</strong>.
             </div>
           </div>
           <div class="stream-live-badge" id="liveBadge"><div class="dot"></div> LIVE</div>
-          <div class="ai-badge" id="aiBadge">🤖 AI Detection</div>
           <div class="stream-ts" id="streamTs"></div>
         </div>
         <div class="cam-status-bar">
           <div class="cam-status-dot" id="camStatusDot"></div>
-          <span id="camStatusText">Not connected — select a mode and press Connect.</span>
+          <span id="camStatusText">Not connected — enter the IP and press Connect.</span>
         </div>
       </div>
 
@@ -317,28 +261,17 @@
   setInterval(tick, 1000); tick();
 
   let camConnected = false;
-  let currentMode  = 'esp32';
 
   const camStream  = document.getElementById('camStream');
   const overlay    = document.getElementById('streamOverlay');
   const liveBadge  = document.getElementById('liveBadge');
-  const aiBadge    = document.getElementById('aiBadge');
   const streamTs   = document.getElementById('streamTs');
   const statusDot  = document.getElementById('camStatusDot');
   const statusText = document.getElementById('camStatusText');
 
-  // Restore saved IPs
+  // Restore saved IP
   const savedEspIp = localStorage.getItem('esp32_cam_ip');
-  const savedAiIp  = localStorage.getItem('ai_server_ip');
   if (savedEspIp) document.getElementById('camIpInput').value = savedEspIp;
-  if (savedAiIp)  document.getElementById('aiIpInput').value  = savedAiIp;
-
-  function onModeChange() {
-    currentMode = document.getElementById('modeSelect').value;
-    document.getElementById('ipWrap').style.display  = currentMode === 'esp32' ? 'flex' : 'none';
-    document.getElementById('aiWrap').style.display  = currentMode === 'ai'    ? 'flex' : 'none';
-    disconnectCamera();
-  }
 
   function setStatus(state, msg) {
     statusDot.className    = 'cam-status-dot ' + state;
@@ -348,24 +281,13 @@
   function connectCamera() {
     if (camConnected) disconnectCamera();
 
-    let streamUrl = '';
+    const ip = document.getElementById('camIpInput').value.trim();
+    if (!ip) { alert('Please enter the ESP32-CAM IP address.'); return; }
+    localStorage.setItem('esp32_cam_ip', ip);
 
-    if (currentMode === 'esp32') {
-      const ip = document.getElementById('camIpInput').value.trim();
-      if (!ip) { alert('Please enter the ESP32-CAM IP address.'); return; }
-      localStorage.setItem('esp32_cam_ip', ip);
-      streamUrl = 'http://' + ip + '/';
-      setStatus('connecting', 'Connecting to ESP32-CAM at http://' + ip + ' …');
-      overlay.innerHTML = '<div class="overlay-icon">⏳</div><div class="overlay-text">Connecting to ESP32-CAM…</div>';
-      aiBadge.classList.remove('visible');
-
-    } else {
-      const aiIp = document.getElementById('aiIpInput').value.trim() || 'localhost:5000';
-      localStorage.setItem('ai_server_ip', aiIp);
-      streamUrl = 'http://' + aiIp + '/stream';
-      setStatus('connecting', 'Connecting to AI Detection Server at http://' + aiIp + ' …');
-      overlay.innerHTML = '<div class="overlay-icon">⏳</div><div class="overlay-text">Connecting to YOLOv8 AI Detection server…<br><small style="color:#6b7a99;">Make sure fish_server.py is running!</small></div>';
-    }
+    const streamUrl = 'http://' + ip + '/';
+    setStatus('connecting', 'Connecting to ESP32-CAM at http://' + ip + ' …');
+    overlay.innerHTML = '<div class="overlay-icon">⏳</div><div class="overlay-text">Connecting to ESP32-CAM…</div>';
 
     camStream.onload = () => {
       camStream.style.display = 'block';
@@ -373,30 +295,15 @@
       liveBadge.classList.add('visible');
       streamTs.classList.add('visible');
       camConnected = true;
-
-      if (currentMode === 'ai') {
-        aiBadge.classList.add('visible');
-        setStatus('connected', '🤖 AI Detection active — YOLOv8 fish detection running.');
-      } else {
-        aiBadge.classList.remove('visible');
-        setStatus('connected', 'Streaming from ESP32-CAM — Live MJPEG feed active.');
-      }
+      setStatus('connected', 'Streaming from ESP32-CAM — Live MJPEG feed active.');
     };
 
     camStream.onerror = () => {
       camStream.style.display = 'none';
       overlay.classList.remove('hidden');
-
-      if (currentMode === 'ai') {
-        overlay.innerHTML = '<div class="overlay-icon">❌</div><div class="overlay-text">Could not connect to AI Detection server.<br><br><strong>Make sure fish_server.py is running:</strong><br><code style="font-size:11px;color:#14b8a6;">python fish_server.py</code><br><small style="color:#6b7a99;">Then press Connect again.</small></div>';
-        setStatus('error', 'AI server not reachable — run fish_server.py first.');
-      } else {
-        overlay.innerHTML = '<div class="overlay-icon">❌</div><div class="overlay-text">Could not connect to ESP32-CAM.<br>Check IP address and WiFi connection.</div>';
-        setStatus('error', 'Connection failed — check the IP and ensure ESP32-CAM is on the same network.');
-      }
-
+      overlay.innerHTML = '<div class="overlay-icon">❌</div><div class="overlay-text">Could not connect to ESP32-CAM.<br>Check IP address and WiFi connection.</div>';
+      setStatus('error', 'Connection failed — check the IP and ensure ESP32-CAM is on the same network.');
       liveBadge.classList.remove('visible');
-      aiBadge.classList.remove('visible');
       streamTs.classList.remove('visible');
       camConnected = false;
     };
@@ -408,12 +315,11 @@
     camStream.src = '';
     camStream.style.display = 'none';
     overlay.classList.remove('hidden');
-    overlay.innerHTML = '<div class="overlay-icon">📷</div><div class="overlay-text">Select a mode above and press <strong>Connect</strong>.<br><br><span style="font-size:12px;color:#6b7a99;">🐟 <b>ESP32-CAM</b> — direct camera feed<br>🤖 <b>AI Detection</b> — YOLOv8 fish detection</span></div>';
+    overlay.innerHTML = '<div class="overlay-icon">📷</div><div class="overlay-text">Enter the ESP32-CAM IP above and press <strong>Connect</strong>.</div>';
     liveBadge.classList.remove('visible');
-    aiBadge.classList.remove('visible');
     streamTs.classList.remove('visible');
     camConnected = false;
-    setStatus('', 'Not connected — select a mode and press Connect.');
+    setStatus('', 'Not connected — enter the IP and press Connect.');
   }
 
   function takeSnapshot() {
@@ -437,9 +343,6 @@
   }
 
   document.getElementById('camIpInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') connectCamera();
-  });
-  document.getElementById('aiIpInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') connectCamera();
   });
 </script>
