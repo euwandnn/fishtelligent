@@ -12,19 +12,16 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 12px;
     }
-
     @media (min-width: 768px) {
       .actuator-grid {
         grid-template-columns: repeat(3, 1fr);
       }
     }
-
     @media (min-width: 1024px) {
       .actuator-grid {
         grid-template-columns: repeat(3, 1fr);
       }
     }
-
     .actuator-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -37,7 +34,6 @@
       position: relative;
       overflow: hidden;
     }
-
     .actuator-card::before {
       content: '';
       position: absolute;
@@ -47,27 +43,22 @@
       background: var(--border);
       transition: background 0.3s;
     }
-
     .actuator-card.running::before {
       background: var(--ok);
       box-shadow: 0 0 8px var(--ok);
     }
-
     .actuator-card.stopped::before {
       background: var(--text-muted);
     }
-
     .actuator-card.running {
       border-color: rgba(45,212,191,0.3);
       box-shadow: 0 0 20px rgba(45,212,191,0.08);
     }
-
     .actuator-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-
     .actuator-icon {
       width: 40px; height: 40px;
       border-radius: 10px;
@@ -77,12 +68,10 @@
       border: 1px solid var(--border-subtle);
       transition: background 0.3s, border-color 0.3s;
     }
-
     .actuator-card.running .actuator-icon {
       background: var(--teal-900);
       border-color: rgba(45,212,191,0.3);
     }
-
     .status-pill {
       display: flex; align-items: center; gap: 5px;
       padding: 4px 10px;
@@ -94,44 +83,37 @@
       font-family: var(--font-mono);
       transition: all 0.3s;
     }
-
     .status-pill.on {
       background: var(--ok-bg);
       color: var(--ok);
       border: 1px solid rgba(45,212,191,0.3);
     }
-
     .status-pill.off {
       background: var(--bg-elevated);
       color: var(--text-muted);
       border: 1px solid var(--border-subtle);
     }
-
     .status-pill .pill-dot {
       width: 6px; height: 6px;
       border-radius: 50%;
       background: currentColor;
       transition: all 0.3s;
     }
-
     .status-pill.on .pill-dot {
       animation: pulse-dot 1.2s ease-in-out infinite;
       box-shadow: 0 0 4px var(--ok);
     }
-
     .actuator-name {
       font-size: 13px;
       font-weight: 700;
       color: var(--text-primary);
       letter-spacing: -0.2px;
     }
-
     .actuator-channel {
       font-size: 10px;
       color: var(--text-muted);
       font-family: var(--font-mono);
     }
-
     .actuator-trigger {
       font-size: 11px;
       color: var(--text-secondary);
@@ -141,13 +123,11 @@
       border-radius: var(--radius-sm);
       border: 1px solid var(--border-subtle);
     }
-
     .actuator-trigger span {
       color: var(--teal-400);
       font-family: var(--font-mono);
       font-weight: 700;
     }
-
     /* Running animation bar */
     .actuator-bar {
       height: 3px;
@@ -155,7 +135,6 @@
       background: var(--border-subtle);
       overflow: hidden;
     }
-
     .actuator-bar-fill {
       height: 100%;
       width: 0%;
@@ -163,17 +142,14 @@
       border-radius: 2px;
       transition: width 0.5s ease;
     }
-
     .actuator-card.running .actuator-bar-fill {
       width: 100%;
       animation: bar-pulse 2s ease-in-out infinite;
     }
-
     @keyframes bar-pulse {
       0%, 100% { opacity: 1; }
       50%       { opacity: 0.4; }
     }
-
     /* Summary stats */
     .summary-row {
       display: grid;
@@ -181,7 +157,6 @@
       gap: 10px;
       margin-bottom: 4px;
     }
-
     .summary-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -189,7 +164,6 @@
       padding: 12px;
       text-align: center;
     }
-
     .summary-num {
       font-family: var(--font-mono);
       font-size: 28px;
@@ -197,11 +171,9 @@
       line-height: 1;
       margin-bottom: 4px;
     }
-
     .summary-num.green { color: var(--ok); }
     .summary-num.gray  { color: var(--text-muted); }
     .summary-num.warn  { color: var(--warn); }
-
     .summary-label {
       font-size: 10px;
       color: var(--text-muted);
@@ -209,7 +181,6 @@
       letter-spacing: 0.6px;
       font-weight: 600;
     }
-
     /* Last triggered */
     .last-trigger {
       font-size: 10px;
@@ -217,7 +188,6 @@
       font-family: var(--font-mono);
       text-align: right;
     }
-
     /* 220V warning badge */
     .ac-badge {
       display: inline-block;
@@ -233,9 +203,7 @@
   </style>
 </head>
 <body>
-
 <div class="app-shell">
-
   <!-- ── SIDEBAR (desktop only) ── -->
   <aside class="sidebar">
     <div class="sidebar-brand">
@@ -258,10 +226,8 @@
       <div class="sys-status"><div class="pulse-dot"></div> System online</div>
     </div>
   </aside>
-
   <!-- ── MAIN ── -->
   <div class="main-content">
-
     <header class="topbar">
       <div class="topbar-brand">
         <div class="topbar-brand-icon">⚙️</div>
@@ -275,14 +241,11 @@
         <div class="time-chip" id="clock">--:--:--</div>
       </div>
     </header>
-
     <main class="page-content">
-
       <div class="page-header">
         <h1 class="page-title">Actuator Status</h1>
         <p class="page-desc">Real-time status of all automated actuators. Triggers automatically based on sensor readings.</p>
       </div>
-
       <!-- Summary Row -->
       <div class="summary-row">
         <div class="summary-card">
@@ -298,10 +261,8 @@
           <div class="summary-label">Total</div>
         </div>
       </div>
-
       <!-- Actuator Grid -->
       <div class="actuator-grid">
-
         <!-- K1: Water Pump -->
         <div class="actuator-card stopped" id="card-pump">
           <div class="actuator-top">
@@ -316,12 +277,11 @@
             <div class="actuator-channel">K1 — GPIO16</div>
           </div>
           <div class="actuator-trigger">
-            Fills tank when level &lt; <span>15 cm</span>
+            Fills tank when level &lt; <span>21.3 cm</span>
           </div>
           <div class="actuator-bar"><div class="actuator-bar-fill" id="bar-pump"></div></div>
           <div class="last-trigger" id="time-pump">Last: --</div>
         </div>
-
         <!-- K2: Solenoid Drain Valve -->
         <div class="actuator-card stopped" id="card-drain">
           <div class="actuator-top">
@@ -336,12 +296,11 @@
             <div class="actuator-channel">K2 — GPIO17</div>
           </div>
           <div class="actuator-trigger">
-            Drains tank when level &gt; <span>40 cm</span>
+            Drains tank when level &gt; <span>29.0 cm</span>
           </div>
           <div class="actuator-bar"><div class="actuator-bar-fill" id="bar-drain"></div></div>
           <div class="last-trigger" id="time-drain">Last: --</div>
         </div>
-
         <!-- K3: Heater -->
         <div class="actuator-card stopped" id="card-heater">
           <div class="actuator-top">
@@ -364,7 +323,6 @@
           <div class="actuator-bar"><div class="actuator-bar-fill" id="bar-heater"></div></div>
           <div class="last-trigger" id="time-heater">Last: --</div>
         </div>
-
         <!-- K4: pH Down Pump -->
         <div class="actuator-card stopped" id="card-ph_down">
           <div class="actuator-top">
@@ -384,7 +342,6 @@
           <div class="actuator-bar"><div class="actuator-bar-fill" id="bar-ph_down"></div></div>
           <div class="last-trigger" id="time-ph_down">Last: --</div>
         </div>
-
         <!-- K5: pH Up Pump -->
         <div class="actuator-card stopped" id="card-ph_up">
           <div class="actuator-top">
@@ -404,7 +361,6 @@
           <div class="actuator-bar"><div class="actuator-bar-fill" id="bar-ph_up"></div></div>
           <div class="last-trigger" id="time-ph_up">Last: --</div>
         </div>
-
         <!-- K6: Air Pump -->
         <div class="actuator-card stopped" id="card-aerator">
           <div class="actuator-top">
@@ -424,9 +380,7 @@
           <div class="actuator-bar"><div class="actuator-bar-fill" id="bar-aerator"></div></div>
           <div class="last-trigger" id="time-aerator">Last: --</div>
         </div>
-
       </div>
-
       <!-- Info card -->
       <div class="card" style="margin-top:0;">
         <div class="card-header">
@@ -455,10 +409,8 @@
           </div>
         </div>
       </div>
-
     </main>
   </div>
-
   <!-- ── BOTTOM NAV (mobile) ── -->
   <nav class="bottom-nav">
     <a href="index.html"           class="nav-item"><span class="nav-icon">📊</span>Dashboard</a>
@@ -466,16 +418,13 @@
     <a href="water-quality.html"   class="nav-item"><span class="nav-icon">💧</span>Water</a>
     <a href="actuators.html"       class="nav-item active"><span class="nav-icon">⚙️</span>Actuators</a>
   </nav>
-
 </div>
-
 <script>
   /* ── Clock ── */
   function tick() {
     document.getElementById('clock').textContent = new Date().toLocaleTimeString();
   }
   setInterval(tick, 1000); tick();
-
   /* ── Actuator keys matching database columns ── */
   const ACTUATORS = [
     { key: 'pump',    label: 'Water Pump'    },
@@ -485,10 +434,8 @@
     { key: 'ph_up',   label: 'pH Up Pump'    },
     { key: 'aerator', label: 'Air Pump'      },
   ];
-
   /* ── Last triggered times ── */
   const lastTriggered = {};
-
   /* ── Update one actuator card ── */
   function updateActuator(key, isOn) {
     const card  = document.getElementById(`card-${key}`);
@@ -496,18 +443,14 @@
     const label = document.getElementById(`label-${key}`);
     const bar   = document.getElementById(`bar-${key}`);
     const time  = document.getElementById(`time-${key}`);
-
     if (!card) return;
-
     card.classList.remove('running', 'stopped');
     pill.classList.remove('on', 'off');
-
     if (isOn) {
       card.classList.add('running');
       pill.classList.add('on');
       label.textContent = 'ON';
       bar.style.width = '100%';
-
       // Record last triggered time
       lastTriggered[key] = new Date();
       time.textContent = 'Last: just now';
@@ -516,7 +459,6 @@
       pill.classList.add('off');
       label.textContent = 'OFF';
       bar.style.width = '0%';
-
       // Show last triggered time
       if (lastTriggered[key]) {
         const diff = Math.floor((new Date() - lastTriggered[key]) / 1000);
@@ -526,7 +468,6 @@
       }
     }
   }
-
   /* ── Update summary counts ── */
   function updateSummary(data) {
     let running = 0;
@@ -537,7 +478,6 @@
     document.getElementById('stoppedCount').textContent = ACTUATORS.length - running;
     document.getElementById('totalCount').textContent   = ACTUATORS.length;
   }
-
   /* ── Fetch from server ── */
   async function fetchActuatorData() {
     try {
@@ -547,20 +487,16 @@
       if (!res.ok) throw new Error("HTTP error " + res.status);
       const data = await res.json();
       if (!data || data.error) return;
-
       // Update each actuator
       ACTUATORS.forEach(a => {
         updateActuator(a.key, parseInt(data[a.key]) === 1);
       });
-
       // Update summary
       updateSummary(data);
-
     } catch (err) {
       console.error('Fetch error:', err);
     }
   }
-
   /* ── Update relative times every 10s ── */
   function updateTimes() {
     ACTUATORS.forEach(a => {
@@ -574,11 +510,9 @@
       }
     });
   }
-
   setInterval(fetchActuatorData, 3000);
   setInterval(updateTimes, 10000);
   fetchActuatorData();
 </script>
-
 </body>
 </html>
