@@ -217,10 +217,11 @@
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section-label">Main</div>
-      <a href="index.html"          class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
-      <a href="fish-monitoring.html" class="nav-link"><span class="nav-icon">🐠</span> Fish Monitoring</a>
-      <a href="water-quality.html"  class="nav-link"><span class="nav-icon">💧</span> Water Quality</a>
-      <a href="actuators.html"      class="nav-link active"><span class="nav-icon">⚙️</span> Actuators</a>
+      <a href="index.html"              class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="fish-monitoring.html"    class="nav-link"><span class="nav-icon">🐠</span> Fish Monitoring</a>
+      <a href="water-quality.html"      class="nav-link"><span class="nav-icon">💧</span> Water Quality</a>
+      <a href="actuators.html"          class="nav-link active"><span class="nav-icon">⚙️</span> Actuators</a>
+      <a href="system-walkthrough.html" class="nav-link"><span class="nav-icon">🔄</span> System Walkthrough</a>
     </nav>
     <div class="sidebar-footer">
       <div class="sys-status"><div class="pulse-dot"></div> System online</div>
@@ -410,10 +411,11 @@
   </div>
   <!-- ── BOTTOM NAV (mobile) ── -->
   <nav class="bottom-nav">
-    <a href="index.html"           class="nav-item"><span class="nav-icon">📊</span>Dashboard</a>
-    <a href="fish-monitoring.html" class="nav-item"><span class="nav-icon">🐠</span>Fish</a>
-    <a href="water-quality.html"   class="nav-item"><span class="nav-icon">💧</span>Water</a>
-    <a href="actuators.html"       class="nav-item active"><span class="nav-icon">⚙️</span>Actuators</a>
+    <a href="index.html"              class="nav-item"><span class="nav-icon">📊</span>Dashboard</a>
+    <a href="fish-monitoring.html"    class="nav-item"><span class="nav-icon">🐠</span>Fish</a>
+    <a href="water-quality.html"      class="nav-item"><span class="nav-icon">💧</span>Water</a>
+    <a href="actuators.html"          class="nav-item active"><span class="nav-icon">⚙️</span>Actuators</a>
+    <a href="system-walkthrough.html" class="nav-item"><span class="nav-icon">🔄</span>Walkthrough</a>
   </nav>
 </div>
 <script>
@@ -448,7 +450,6 @@
       pill.classList.add('on');
       label.textContent = 'ON';
       bar.style.width = '100%';
-      // Record last triggered time
       lastTriggered[key] = new Date();
       time.textContent = 'Last: just now';
     } else {
@@ -456,10 +457,9 @@
       pill.classList.add('off');
       label.textContent = 'OFF';
       bar.style.width = '0%';
-      // Show last triggered time
       if (lastTriggered[key]) {
         const diff = Math.floor((new Date() - lastTriggered[key]) / 1000);
-        if (diff < 60)       time.textContent = `Last: ${diff}s ago`;
+        if (diff < 60)        time.textContent = `Last: ${diff}s ago`;
         else if (diff < 3600) time.textContent = `Last: ${Math.floor(diff/60)}m ago`;
         else                  time.textContent = `Last: ${Math.floor(diff/3600)}h ago`;
       }
@@ -484,11 +484,9 @@
       if (!res.ok) throw new Error("HTTP error " + res.status);
       const data = await res.json();
       if (!data || data.error) return;
-      // Update each actuator
       ACTUATORS.forEach(a => {
         updateActuator(a.key, parseInt(data[a.key]) === 1);
       });
-      // Update summary
       updateSummary(data);
     } catch (err) {
       console.error('Fetch error:', err);
