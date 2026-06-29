@@ -5,10 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Fishtelligent | Dashboard</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .chart-card {
+      background: var(--card-bg, #1a2332);
+      border: 1px solid var(--border, #243044);
+      border-radius: 16px;
+      padding: 1rem 1.25rem;
+    }
+    .chart-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--muted, #6b7a99);
+      margin-bottom: .5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .chart-current {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: .5rem;
+    }
+    .chart-wrap { position: relative; height: 90px; }
+  </style>
 </head>
 <body>
 <div class="app-shell">
-  <!-- ── SIDEBAR (desktop only) ── -->
+
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-logo">
@@ -21,16 +51,17 @@
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section-label">Main</div>
-      <a href="index.html" class="nav-link active"><span class="nav-icon">📊</span> Dashboard</a>
-      <a href="fish-monitoring.html" class="nav-link"><span class="nav-icon">🐠</span> Fish Monitoring</a>
-      <a href="water-quality.html" class="nav-link"><span class="nav-icon">💧</span> Water Quality</a>
-      <a href="actuators.html" class="nav-link"><span class="nav-icon">⚙️</span> Actuators</a>
+      <a href="index.html"              class="nav-link active"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="fish-monitoring.html"    class="nav-link"><span class="nav-icon">🐠</span> Fish Monitoring</a>
+      <a href="water-quality.html"      class="nav-link"><span class="nav-icon">💧</span> Water Quality</a>
+      <a href="actuators.html"          class="nav-link"><span class="nav-icon">⚙️</span> Actuators</a>
+      <a href="system-walkthrough.html" class="nav-link"><span class="nav-icon">🔄</span> Paano Gumagana</a>
     </nav>
     <div class="sidebar-footer">
       <div class="sys-status"><div class="pulse-dot"></div> System online</div>
     </div>
   </aside>
-  <!-- ── MAIN ── -->
+
   <div class="main-content">
     <header class="topbar">
       <div class="topbar-brand">
@@ -40,26 +71,24 @@
           <div class="topbar-subtitle">Dashboard Overview</div>
         </div>
       </div>
-      <div class="topbar-left" style="display:none;" id="desktopTitle">
-        <div class="topbar-title">Dashboard Overview</div>
-        <div class="topbar-subtitle">Main Fish Tank — Real-time monitoring</div>
-      </div>
       <div class="topbar-right">
         <div class="live-badge"><div class="dot"></div> Live</div>
         <div class="time-chip" id="clock">--:--:--</div>
       </div>
     </header>
+
     <main class="page-content">
       <div class="page-header">
         <h1 class="page-title">System Overview</h1>
         <p class="page-desc">Aggregated sensor data and health indicators for all active tanks.</p>
       </div>
+
       <!-- Stat Row -->
       <div class="stat-grid">
         <div class="stat-card ok" id="tempStat">
           <div class="stat-label">Temperature</div>
           <div class="stat-value"><span id="tempValue">--</span></div>
-          <div class="stat-foot">26–30 °C</div>
+          <div class="stat-foot">27.6–30.2 °C</div>
         </div>
         <div class="stat-card ok" id="phStat">
           <div class="stat-label">pH Level</div>
@@ -69,26 +98,99 @@
         <div class="stat-card ok" id="wlStat">
           <div class="stat-label">Water Level</div>
           <div class="stat-value"><span id="waterLevelValue">--</span></div>
-          <div class="stat-foot">15–20 cm</div>
+          <div class="stat-foot">40–95 %</div>
         </div>
         <div class="stat-card ok" id="turbStat">
           <div class="stat-label">Turbidity</div>
           <div class="stat-value"><span id="turbidityValue">--</span></div>
-          <div class="stat-foot">40–100 %</div>
+          <div class="stat-foot">0–25 NTU</div>
         </div>
         <div class="stat-card ok" id="salinityStat">
           <div class="stat-label">Salinity</div>
           <div class="stat-value"><span id="salinityValue">--</span></div>
-          <div class="stat-foot">28–35 ppt</div>
+          <div class="stat-foot">28–34 g/L</div>
         </div>
       </div>
+
+      <!-- ── REAL-TIME CHARTS ── -->
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-header">
+          <div class="card-title"><span class="card-title-icon">📈</span> Real-Time Trends</div>
+          <span class="badge info">Last 20 readings</span>
+        </div>
+        <div class="card-body" style="padding-top:.5rem;">
+          <div class="charts-grid">
+
+            <!-- Temperature -->
+            <div class="chart-card">
+              <div class="chart-label">
+                <span>🌡 Temperature</span>
+                <span style="font-size:0.72rem;">Safe: 27.6–30.2°C</span>
+              </div>
+              <div class="chart-current" id="chartTempVal" style="color:#f59e0b;">-- °C</div>
+              <div class="chart-wrap"><canvas id="chartTemp"></canvas></div>
+            </div>
+
+            <!-- pH -->
+            <div class="chart-card">
+              <div class="chart-label">
+                <span>⚗ pH Level</span>
+                <span style="font-size:0.72rem;">Safe: 7.0–7.91</span>
+              </div>
+              <div class="chart-current" id="chartPhVal" style="color:#14b8a6;">--</div>
+              <div class="chart-wrap"><canvas id="chartPh"></canvas></div>
+            </div>
+
+            <!-- Salinity -->
+            <div class="chart-card">
+              <div class="chart-label">
+                <span>🧂 Salinity</span>
+                <span style="font-size:0.72rem;">Safe: 28–34 g/L</span>
+              </div>
+              <div class="chart-current" id="chartSalVal" style="color:#8b5cf6;">-- g/L</div>
+              <div class="chart-wrap"><canvas id="chartSal"></canvas></div>
+            </div>
+
+            <!-- Turbidity -->
+            <div class="chart-card">
+              <div class="chart-label">
+                <span>🔍 Turbidity</span>
+                <span style="font-size:0.72rem;">Safe: 0–25 NTU</span>
+              </div>
+              <div class="chart-current" id="chartTurbVal" style="color:#06b6d4;">-- NTU</div>
+              <div class="chart-wrap"><canvas id="chartTurb"></canvas></div>
+            </div>
+
+            <!-- Water Level -->
+            <div class="chart-card">
+              <div class="chart-label">
+                <span>🌊 Water Level</span>
+                <span style="font-size:0.72rem;">Safe: 40–95%</span>
+              </div>
+              <div class="chart-current" id="chartWlVal" style="color:#22c55e;">-- %</div>
+              <div class="chart-wrap"><canvas id="chartWl"></canvas></div>
+            </div>
+
+            <!-- DO -->
+            <div class="chart-card">
+              <div class="chart-label">
+                <span>🫧 Dissolved O₂</span>
+                <span style="font-size:0.72rem;">Safe: 5–9 mg/L</span>
+              </div>
+              <div class="chart-current" id="chartDoVal" style="color:#3b82f6;">-- mg/L</div>
+              <div class="chart-wrap"><canvas id="chartDo"></canvas></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
       <!-- Card Grid -->
       <div class="card-grid">
-        <!-- Water Quality Detail -->
         <div class="card">
           <div class="card-header">
             <div class="card-title"><span class="card-title-icon">💧</span> Water Parameters</div>
-            <span class="badge ok">Normal</span>
+            <span class="badge ok" id="waterBadge">Normal</span>
           </div>
           <div class="card-body">
             <div class="param-row"><span class="param-name">pH Level</span><span class="param-value" id="ph2">--</span></div>
@@ -98,7 +200,6 @@
             <div class="param-row"><span class="param-name">Salinity</span><span class="param-value" id="salinity2">--</span></div>
           </div>
         </div>
-        <!-- System Alerts -->
         <div class="card">
           <div class="card-header">
             <div class="card-title"><span class="card-title-icon">⚠️</span> System Alerts</div>
@@ -114,9 +215,10 @@
           </div>
         </div>
       </div>
+
     </main>
   </div>
-  <!-- ── BOTTOM NAV (mobile) ── -->
+
   <nav class="bottom-nav">
     <a href="index.html"           class="nav-item active"><span class="nav-icon">📊</span>Dashboard</a>
     <a href="fish-monitoring.html" class="nav-item"><span class="nav-icon">🐠</span>Fish</a>
@@ -124,14 +226,90 @@
     <a href="actuators.html"       class="nav-item"><span class="nav-icon">⚙️</span>Actuators</a>
   </nav>
 </div>
+
 <script>
+  const API = "https://fishtelligent-production.up.railway.app/api/get_latest_data.php";
+  const MAX_POINTS = 20;
+
   function tick() { document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }
   setInterval(tick, 1000); tick();
+
+  // ── CHART SETUP ──
+  const chartDefaults = {
+    type: 'line',
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: { legend: { display: false }, tooltip: { enabled: true } },
+      scales: {
+        x: { display: false },
+        y: { display: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#6b7a99', font: { size: 10 }, maxTicksLimit: 3 } }
+      },
+      elements: { point: { radius: 0, hoverRadius: 4 }, line: { tension: 0.4, borderWidth: 2 } }
+    }
+  };
+
+  function makeChart(id, color, minY, maxY, safeMin, safeMax) {
+    const ctx = document.getElementById(id).getContext('2d');
+    const cfg = JSON.parse(JSON.stringify(chartDefaults));
+    cfg.data = {
+      labels: [],
+      datasets: [
+        {
+          data: [],
+          borderColor: color,
+          backgroundColor: color + '18',
+          fill: true,
+        },
+        // Safe min line
+        { data: [], borderColor: 'rgba(34,197,94,0.3)', borderDash: [4,4], borderWidth: 1, pointRadius: 0, fill: false },
+        // Safe max line
+        { data: [], borderColor: 'rgba(239,68,68,0.3)', borderDash: [4,4], borderWidth: 1, pointRadius: 0, fill: false },
+      ]
+    };
+    if (minY !== null) cfg.options.scales.y.min = minY;
+    if (maxY !== null) cfg.options.scales.y.max = maxY;
+    return new Chart(ctx, cfg);
+  }
+
+  const charts = {
+    temp: makeChart('chartTemp', '#f59e0b', 25, 35, 27.6, 30.2),
+    ph:   makeChart('chartPh',   '#14b8a6', 5,  10, 7.0,  7.91),
+    sal:  makeChart('chartSal',  '#8b5cf6', 20, 40, 28,   34),
+    turb: makeChart('chartTurb', '#06b6d4', 0,  50, 0,    25),
+    wl:   makeChart('chartWl',   '#22c55e', 0,  100, 40,  95),
+    do_:  makeChart('chartDo',   '#3b82f6', 0,  12, 5,    9),
+  };
+
+  const safeLimits = {
+    temp: { min: 27.6, max: 30.2 },
+    ph:   { min: 7.0,  max: 7.91 },
+    sal:  { min: 28,   max: 34   },
+    turb: { min: 0,    max: 25   },
+    wl:   { min: 40,   max: 95   },
+    do_:  { min: 5,    max: 9    },
+  };
+
+  function pushData(chart, value, safeMin, safeMax) {
+    const label = new Date().toLocaleTimeString();
+    chart.data.labels.push(label);
+    chart.data.datasets[0].data.push(value);
+    chart.data.datasets[1].data.push(safeMin);
+    chart.data.datasets[2].data.push(safeMax);
+    if (chart.data.labels.length > MAX_POINTS) {
+      chart.data.labels.shift();
+      chart.data.datasets.forEach(d => d.data.shift());
+    }
+    chart.update('none');
+  }
+
   function setStatClass(id, ok) {
     const el = document.getElementById(id);
     el.classList.remove('ok', 'warn', 'alert');
     el.classList.add(ok ? 'ok' : 'alert');
   }
+
   function updateAlert(id, ok, label, valueStr) {
     const item = document.getElementById(id);
     const text = item.querySelector('.alert-text');
@@ -145,50 +323,86 @@
       if (Notification.permission === 'granted') {
         new Notification('Fishtelligent Alert', { body: `${label} out of safe range! (${valueStr})` });
       } else if (Notification.permission !== 'denied') {
-        Notification.requestPermission().then(p => {
-          if (p === 'granted') new Notification('Fishtelligent Alert', { body: `${label} out of safe range! (${valueStr})` });
-        });
+        Notification.requestPermission();
       }
     }
   }
+
   async function fetchWaterData() {
     try {
-      const res = await fetch("https://fishtelligent-production.up.railway.app/api/get_latest_data.php");
+      const res  = await fetch(API, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       if (!data || data.error) return;
+
       const ph       = parseFloat(data.ph);
       const temp     = parseFloat(data.temperature);
       const wl       = parseFloat(data.water_level);
       const turb     = parseFloat(data.turbidity);
       const salinity = parseFloat(data.salinity);
+      const doV      = parseFloat(data.dissolved_oxygen);
+
       const fmt = (v, d, u) => isNaN(v) ? '--' : v.toFixed(d) + u;
+
+      // Update stat cards
       document.getElementById('tempValue').textContent       = fmt(temp,     1, ' °C');
       document.getElementById('phValue').textContent         = fmt(ph,       2, '');
-      document.getElementById('waterLevelValue').textContent = fmt(wl,       1, ' cm');
-      document.getElementById('turbidityValue').textContent  = fmt(turb,     1, ' %');
-      document.getElementById('salinityValue').textContent   = fmt(salinity, 1, ' ppt');
+      document.getElementById('waterLevelValue').textContent = fmt(wl,       1, ' %');
+      document.getElementById('turbidityValue').textContent  = fmt(turb,     1, ' NTU');
+      document.getElementById('salinityValue').textContent   = fmt(salinity, 1, ' g/L');
+
+      // Update param list
       document.getElementById('temp2').textContent     = fmt(temp,     1, ' °C');
       document.getElementById('ph2').textContent       = fmt(ph,       2, '');
-      document.getElementById('wl2').textContent       = fmt(wl,       1, ' cm');
-      document.getElementById('turb2').textContent     = fmt(turb,     1, ' %');
-      document.getElementById('salinity2').textContent = fmt(salinity, 1, ' ppt');
-      const tempOk     = !isNaN(temp)     && temp     >= 26   && temp     <= 30;
+      document.getElementById('wl2').textContent       = fmt(wl,       1, ' %');
+      document.getElementById('turb2').textContent     = fmt(turb,     1, ' NTU');
+      document.getElementById('salinity2').textContent = fmt(salinity, 1, ' g/L');
+
+      // Update chart current values
+      document.getElementById('chartTempVal').textContent = fmt(temp,     1, ' °C');
+      document.getElementById('chartPhVal').textContent   = fmt(ph,       2, '');
+      document.getElementById('chartSalVal').textContent  = fmt(salinity, 1, ' g/L');
+      document.getElementById('chartTurbVal').textContent = fmt(turb,     1, ' NTU');
+      document.getElementById('chartWlVal').textContent   = fmt(wl,       1, ' %');
+      document.getElementById('chartDoVal').textContent   = fmt(doV,      1, ' mg/L');
+
+      // Push to charts
+      if (!isNaN(temp))     pushData(charts.temp, temp,     safeLimits.temp.min, safeLimits.temp.max);
+      if (!isNaN(ph))       pushData(charts.ph,   ph,       safeLimits.ph.min,   safeLimits.ph.max);
+      if (!isNaN(salinity)) pushData(charts.sal,  salinity, safeLimits.sal.min,  safeLimits.sal.max);
+      if (!isNaN(turb))     pushData(charts.turb, turb,     safeLimits.turb.min, safeLimits.turb.max);
+      if (!isNaN(wl))       pushData(charts.wl,   wl,       safeLimits.wl.min,   safeLimits.wl.max);
+      if (!isNaN(doV))      pushData(charts.do_,  doV,      safeLimits.do_.min,  safeLimits.do_.max);
+
+      // Status checks
+      const tempOk     = !isNaN(temp)     && temp     >= 27.6 && temp     <= 30.2;
       const phOk       = !isNaN(ph)       && ph       >= 7.0  && ph       <= 7.91;
-      const wlOk       = !isNaN(wl)       && wl       >= 15 && wl       <= 20;
-      const turbOk     = !isNaN(turb)     && turb     >= 40   && turb     <= 100;
-      const salinityOk = !isNaN(salinity) && salinity >= 28   && salinity <= 35;
+      const wlOk       = !isNaN(wl)       && wl       >= 40   && wl       <= 95;
+      const turbOk     = !isNaN(turb)     && turb     >= 0    && turb     <= 25;
+      const salinityOk = !isNaN(salinity) && salinity >= 28   && salinity <= 34;
+
       setStatClass('tempStat',     tempOk);
       setStatClass('phStat',       phOk);
       setStatClass('wlStat',       wlOk);
       setStatClass('turbStat',     turbOk);
       setStatClass('salinityStat', salinityOk);
+
       updateAlert('tempAlert',     tempOk,     'Temperature',  fmt(temp,     1, ' °C'));
       updateAlert('phAlert',       phOk,       'pH',           fmt(ph,       2, ''));
-      updateAlert('wlAlert',       wlOk,       'Water Level',  fmt(wl,       1, ' cm'));
-      updateAlert('turbAlert',     turbOk,     'Turbidity',    fmt(turb,     1, ' %'));
-      updateAlert('salinityAlert', salinityOk, 'Salinity',     fmt(salinity, 1, ' ppt'));
+      updateAlert('wlAlert',       wlOk,       'Water Level',  fmt(wl,       1, ' %'));
+      updateAlert('turbAlert',     turbOk,     'Turbidity',    fmt(turb,     1, ' NTU'));
+      updateAlert('salinityAlert', salinityOk, 'Salinity',     fmt(salinity, 1, ' g/L'));
+
+      // Color chart values based on status
+      document.getElementById('chartTempVal').style.color = tempOk     ? '#f59e0b' : '#ef4444';
+      document.getElementById('chartPhVal').style.color   = phOk       ? '#14b8a6' : '#ef4444';
+      document.getElementById('chartSalVal').style.color  = salinityOk ? '#8b5cf6' : '#ef4444';
+      document.getElementById('chartTurbVal').style.color = turbOk     ? '#06b6d4' : '#ef4444';
+      document.getElementById('chartWlVal').style.color   = wlOk       ? '#22c55e' : '#ef4444';
+
     } catch (err) { console.error('Fetch error:', err); }
   }
+
   setInterval(fetchWaterData, 3000);
   fetchWaterData();
 </script>
