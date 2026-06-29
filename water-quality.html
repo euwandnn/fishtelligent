@@ -20,10 +20,11 @@
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section-label">Main</div>
-      <a href="index.html"           class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
-      <a href="fish-monitoring.html" class="nav-link"><span class="nav-icon">🐠</span> Fish Monitoring</a>
-      <a href="water-quality.html"   class="nav-link active"><span class="nav-icon">💧</span> Water Quality</a>
-      <a href="actuators.html"       class="nav-link"><span class="nav-icon">⚙️</span> Actuators</a>
+      <a href="index.html"              class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="fish-monitoring.html"    class="nav-link"><span class="nav-icon">🐠</span> Fish Monitoring</a>
+      <a href="water-quality.html"      class="nav-link active"><span class="nav-icon">💧</span> Water Quality</a>
+      <a href="actuators.html"          class="nav-link"><span class="nav-icon">⚙️</span> Actuators</a>
+      <a href="system-walkthrough.html" class="nav-link"><span class="nav-icon">🔄</span> System Walkthrough</a>
     </nav>
     <div class="sidebar-footer">
       <div class="sys-status"><div class="pulse-dot"></div> System online</div>
@@ -149,10 +150,11 @@
     </main>
   </div>
   <nav class="bottom-nav">
-    <a href="index.html"           class="nav-item"><span class="nav-icon">📊</span>Dashboard</a>
-    <a href="fish-monitoring.html" class="nav-item"><span class="nav-icon">🐠</span>Fish</a>
-    <a href="water-quality.html"   class="nav-item active"><span class="nav-icon">💧</span>Water</a>
-    <a href="actuators.html"       class="nav-item"><span class="nav-icon">⚙️</span>Actuators</a>
+    <a href="index.html"              class="nav-item"><span class="nav-icon">📊</span>Dashboard</a>
+    <a href="fish-monitoring.html"    class="nav-item"><span class="nav-icon">🐠</span>Fish</a>
+    <a href="water-quality.html"      class="nav-item active"><span class="nav-icon">💧</span>Water</a>
+    <a href="actuators.html"          class="nav-item"><span class="nav-icon">⚙️</span>Actuators</a>
+    <a href="system-walkthrough.html" class="nav-item"><span class="nav-icon">🔄</span>Walkthrough</a>
   </nav>
 </div>
 <script>
@@ -160,12 +162,6 @@
   const SENSOR_API = "https://fishtelligent-production.up.railway.app/api/get_latest_data.php";
   const ML_API     = "https://fishtelligent-ml-api.onrender.com/predict/manual";
   // ──────────────────────────────────────────────
-  // ─── Locally-correct safe ranges ───────────────
-  // The ML API's threshold_rule mode currently checks turbidity against
-  // 0-25, but this system reports turbidity as "% clear" (higher = better),
-  // with 40-100 being the real safe zone. These ranges match the stat
-  // cards / Safe Range Reference table below and are used to filter out
-  // false positives the ML API sends for turbidity.
   const SAFE_RANGES = {
     temperature: [27.6, 30.2],
     ph:          [7.0, 7.91],
@@ -173,11 +169,7 @@
     turbidity:   [40, 100],
     salinity:    [28, 34]
   };
-  // The ESP32 sends water_level as a raw centimeter reading
-  // (TANK_HEIGHT - distance), not a percentage. Convert it here using the
-  // tank's physical height so it can be checked against the 40-95% range
-  // used by the stat card, reading dot, and Safe Range Reference table.
-  const TANK_HEIGHT_CM = 30.48; // 12 in tall tank
+  const TANK_HEIGHT_CM = 30.48;
   function cmToPercent(cm) {
     if (isNaN(cm)) return NaN;
     const pct = (cm / TANK_HEIGHT_CM) * 100;
@@ -274,9 +266,6 @@
       if (!res.ok) throw new Error("ML API HTTP " + res.status);
       const data = await res.json();
       lastChk.textContent = new Date().toLocaleTimeString();
-      // The ML API's threshold_rule mode uses its own (sometimes wrong,
-      // e.g. turbidity 0-25) safe ranges. Re-check each triggered
-      // parameter against this system's real ranges before trusting it.
       let triggered = data.triggered || [];
       if (triggered.length > 0) {
         triggered = triggered.filter(t => !isWithinSafeRange(t.parameter, parseFloat(t.value)));
