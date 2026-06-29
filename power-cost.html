@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Fishtelligent | Power Cost</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ── Power Cost page styles ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    @media (min-width: 600px) {
+      .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 12px;
+      display: flex; flex-direction: column; gap: 4px;
+      position: relative; overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px; border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .kpi-card.accent-green::before { background: var(--ok); }
+    .kpi-card.accent-warn::before  { background: var(--warn); }
+    .kpi-card.accent-blue::before  { background: #60a5fa; }
+    .kpi-card.accent-red::before   { background: var(--danger); }
+    .kpi-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.7px;
+      text-transform: uppercase; color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    .kpi-value {
+      font-family: var(--font-mono);
+      font-size: 24px; font-weight: 700; line-height: 1;
+      color: var(--text-primary);
+    }
+    .kpi-value.green { color: var(--ok); }
+    .kpi-value.warn  { color: var(--warn); }
+    .kpi-value.blue  { color: #60a5fa; }
+    .kpi-value.red   { color: var(--danger); }
+    .kpi-sub { font-size: 10px; color: var(--text-muted); }
+
+    /* Controls bar */
+    .controls-bar {
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin-bottom: 4px;
+    }
+    .ctrl { display: flex; flex-direction: column; gap: 5px; }
+    .ctrl-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
+      text-transform: uppercase; color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    .ctrl-inner { display: flex; align-items: center; gap: 8px; }
+    input[type=range] {
+      -webkit-appearance: none; appearance: none;
+      width: 120px; height: 3px;
+      background: var(--border); border-radius: 2px; outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px;
+      border-radius: 50%; background: var(--teal-400);
+      cursor: pointer; border: 2px solid var(--bg-base);
+    }
+    .ctrl-val {
+      font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+      color: var(--teal-400); min-width: 44px;
+    }
+    select {
+      background: var(--bg-elevated); color: var(--text-primary);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 5px 8px; font-size: 12px; outline: none; cursor: pointer;
+    }
+    select:focus { border-color: var(--teal-400); }
+
+    /* Component table */
+    .comp-table-wrap {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .comp-table-head {
+      display: grid;
+      grid-template-columns: 24px 1fr 64px 60px 72px 64px;
+      gap: 6px; padding: 9px 12px;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border);
+      font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
+      text-transform: uppercase; color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    .tr { text-align: right; }
+    .comp-row {
+      display: grid;
+      grid-template-columns: 24px 1fr 64px 60px 72px 64px;
+      gap: 6px; padding: 9px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      align-items: center;
+      transition: background 0.15s;
+    }
+    .comp-row:last-child { border-bottom: none; }
+    .comp-row:hover { background: var(--bg-elevated); }
+    .comp-num {
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--text-muted); text-align: center;
+    }
+    .comp-info { display: flex; flex-direction: column; gap: 1px; }
+    .comp-name { font-size: 12px; font-weight: 700; color: var(--text-primary); }
+    .comp-meta {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 10px; color: var(--text-muted);
+    }
+    .cat-pill {
+      font-size: 8px; font-weight: 700; letter-spacing: 0.4px;
+      text-transform: uppercase; padding: 1px 5px;
+      border-radius: 3px;
+    }
+    .est-tag {
+      font-family: var(--font-mono); font-size: 8px;
+      color: #60a5fa; border: 1px solid rgba(96,165,250,0.4);
+      border-radius: 3px; padding: 0 3px;
+    }
+    .bar-cell { display: flex; align-items: center; gap: 5px; }
+    .mini-bar-wrap {
+      flex: 1; background: var(--border-subtle);
+      border-radius: 2px; height: 4px; overflow: hidden;
+    }
+    .mini-bar { height: 100%; border-radius: 2px; }
+    .mono-r {
+      font-family: var(--font-mono); font-size: 11px;
+      text-align: right; color: var(--text-secondary);
+    }
+    .cost-r {
+      font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+      text-align: right; color: var(--text-primary);
+    }
+    .pct-r {
+      font-family: var(--font-mono); font-size: 10px;
+      text-align: right; color: var(--text-muted);
+    }
+    .total-row {
+      display: grid;
+      grid-template-columns: 24px 1fr 64px 60px 72px 64px;
+      gap: 6px; padding: 10px 12px;
+      background: var(--bg-elevated);
+      border-top: 1px solid var(--border);
+      align-items: center;
+    }
+    .total-label {
+      font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+      color: var(--text-muted); grid-column: 1/3;
+    }
+    .total-val {
+      font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+      text-align: right; color: var(--ok);
+    }
+
+    /* Horizontal bar chart */
+    .hbar-row {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 7px;
+    }
+    .hbar-name {
+      font-size: 10px; color: var(--text-muted); width: 160px;
+      flex-shrink: 0; text-align: right; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .hbar-wrap {
+      flex: 1; background: var(--border-subtle); border-radius: 3px;
+      height: 16px; overflow: hidden;
+    }
+    .hbar-fill {
+      height: 100%; border-radius: 3px;
+      display: flex; align-items: center; justify-content: flex-end;
+      padding-right: 5px; min-width: 2px;
+      transition: width .4s cubic-bezier(.4,0,.2,1);
+    }
+    .hbar-label {
+      font-family: var(--font-mono); font-size: 9px; color: rgba(0,0,0,0.6);
+      white-space: nowrap;
+    }
+    .hbar-cost {
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--text-muted); width: 60px; text-align: right; flex-shrink: 0;
+    }
+
+    /* Tip cards */
+    .tips-grid {
+      display: grid; grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    @media(min-width:600px){ .tips-grid { grid-template-columns: 1fr 1fr; } }
+    .tip-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .tip-card.warn-card { border-color: rgba(251,191,36,0.25); background: rgba(251,191,36,0.04); }
+    .tip-card.good-card { border-color: rgba(45,212,191,0.25); background: rgba(45,212,191,0.04); }
+    .tip-tag {
+      font-size: 8px; font-weight: 700; letter-spacing: 0.8px;
+      text-transform: uppercase; font-family: var(--font-mono);
+    }
+    .tip-tag.warn-tag { color: var(--warn); }
+    .tip-tag.good-tag { color: var(--ok); }
+    .tip-title { font-size: 12px; font-weight: 700; color: var(--text-primary); }
+    .tip-body  { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+
+    /* Formula rows */
+    .formula-row {
+      display: grid; grid-template-columns: 140px 1fr;
+      gap: 12px; padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      align-items: start;
+    }
+    .formula-row:last-child { border-bottom: none; }
+    .f-step {
+      font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+      color: var(--teal-400);
+    }
+    .f-eq {
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--text-primary); line-height: 1.6;
+    }
+    .f-eq em { color: var(--teal-400); font-style: normal; }
+    .f-note { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+    code {
+      font-family: var(--font-mono); font-size: 10px;
+      background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+      padding: 1px 4px; border-radius: 3px; color: #60a5fa;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 10px; color: var(--text-muted);
+    }
+    .legend-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+
+    @media(max-width:500px){
+      .comp-table-head, .comp-row, .total-row {
+        grid-template-columns: 20px 1fr 52px 60px;
+      }
+      .comp-table-head > *:nth-child(3),
+      .comp-row > *:nth-child(3),
+      .comp-table-head > *:nth-child(6),
+      .comp-row > *:nth-child(6),
+      .total-row > *:nth-child(4),
+      .total-row > *:nth-child(6) { display: none; }
+      .hbar-name { width: 100px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <div class="brand-icon">🐟</div>
+        <div>
+          <div class="brand-name">Fishtelligent</div>
+          <div class="brand-sub">Aquaculture Monitor</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="index.html"              class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="fish-monitoring.html"    class="nav-link"><span class="nav-icon">🐠</span> Fish Monitoring</a>
+      <a href="water-quality.html"      class="nav-link"><span class="nav-icon">💧</span> Water Quality</a>
+      <a href="actuators.html"          class="nav-link"><span class="nav-icon">⚙️</span> Actuators</a>
+      <a href="system-walkthrough.html" class="nav-link"><span class="nav-icon">🔄</span> System Walkthrough</a>
+      <a href="power-cost.html"         class="nav-link active"><span class="nav-icon">⚡</span> Power Cost</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sys-status"><div class="pulse-dot"></div> System online</div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <div class="topbar-brand-icon">⚡</div>
+        <div>
+          <div class="topbar-title">Fishtelligent</div>
+          <div class="topbar-subtitle">Power Cost Analysis</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="live-badge"><div class="dot"></div> Live</div>
+        <div class="time-chip" id="clock">--:--:--</div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="page-header">
+        <h1 class="page-title">Power Cost Efficiency</h1>
+        <p class="page-desc">Full cost-benefit analysis of all 15 system components. Adjust the electricity rate to see your real monthly bill.</p>
+      </div>
+
+      <!-- KPI Row -->
+      <div class="kpi-grid">
+        <div class="kpi-card accent-blue">
+          <div class="kpi-label">Peak Draw</div>
+          <div class="kpi-value blue" id="k-watts">—</div>
+          <div class="kpi-sub">all components active</div>
+        </div>
+        <div class="kpi-card accent-green">
+          <div class="kpi-label">Daily Use</div>
+          <div class="kpi-value green" id="k-kwh">—</div>
+          <div class="kpi-sub">weighted by active hrs</div>
+        </div>
+        <div class="kpi-card accent-warn">
+          <div class="kpi-label">Monthly Cost</div>
+          <div class="kpi-value warn" id="k-monthly">—</div>
+          <div class="kpi-sub" id="k-rate-sub">at ₱11/kWh</div>
+        </div>
+        <div class="kpi-card accent-red">
+          <div class="kpi-label">Annual Est.</div>
+          <div class="kpi-value red" id="k-annual">—</div>
+          <div class="kpi-sub">12-month projection</div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls-bar">
+        <div class="ctrl">
+          <span class="ctrl-label">Meralco Rate (₱/kWh)</span>
+          <div class="ctrl-inner">
+            <input type="range" id="rate" min="5" max="20" step="0.5" value="11">
+            <span class="ctrl-val" id="rate-out">₱11.0</span>
+          </div>
+        </div>
+        <div class="ctrl">
+          <span class="ctrl-label">Sort by</span>
+          <div class="ctrl-inner">
+            <select id="sortby">
+              <option value="cost">Monthly cost ↓</option>
+              <option value="watts">Peak watts ↓</option>
+              <option value="cat">Category</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Component Table -->
+      <div class="card" style="padding:0; overflow:hidden;">
+        <div class="card-header" style="padding:12px 14px;">
+          <div class="card-title"><span class="card-title-icon">🔌</span> Component Breakdown</div>
+        </div>
+        <div style="padding: 0 14px 10px;">
+          <div class="legend" id="legend">
+            <span class="legend-item"><span class="legend-dot" style="background:#388bfd"></span>Controllers</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#2dd4bf"></span>Sensors</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#fbbf24"></span>12V Actuators</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#f87171"></span>220V Loads</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#6b7280"></span>Infrastructure</span>
+            <span class="legend-item" style="margin-left:4px"><span class="est-tag">est</span>&nbsp;= estimated</span>
+          </div>
+        </div>
+        <div class="comp-table-wrap" style="border:none;border-top:1px solid var(--border);border-radius:0;">
+          <div class="comp-table-head">
+            <div>#</div>
+            <div>Component</div>
+            <div class="tr">Watts</div>
+            <div class="tr">Wh/day</div>
+            <div class="tr">₱/month</div>
+            <div class="tr">%</div>
+          </div>
+          <div id="comp-list"></div>
+          <div class="total-row" id="total-row"></div>
+        </div>
+      </div>
+
+      <!-- Bar Chart -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="card-title-icon">📊</span> Monthly Cost Distribution</div>
+        </div>
+        <div class="card-body" id="chart-body"></div>
+      </div>
+
+      <!-- Efficiency Tips -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="card-title-icon">💡</span> Efficiency Tips</div>
+        </div>
+        <div class="card-body">
+          <div class="tips-grid" id="tips-grid"></div>
+        </div>
+      </div>
+
+      <!-- Formulas -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="card-title-icon">📐</span> Computation Reference</div>
+        </div>
+        <div class="card-body">
+          <div class="formula-row">
+            <div class="f-step">Step 1 — Wh/day</div>
+            <div>
+              <div class="f-eq"><em>Watts</em> × <em>Active Hours/day</em></div>
+              <div class="f-note">e.g. Heater: 100W × 12h = <code>1,200 Wh/day</code></div>
+            </div>
+          </div>
+          <div class="formula-row">
+            <div class="f-step">Step 2 — kWh/mo</div>
+            <div>
+              <div class="f-eq"><em>Wh/day</em> × 30 ÷ 1,000</div>
+              <div class="f-note">e.g. 1,200 × 30 ÷ 1,000 = <code>36 kWh/month</code></div>
+            </div>
+          </div>
+          <div class="formula-row">
+            <div class="f-step">Step 3 — ₱/month</div>
+            <div>
+              <div class="f-eq"><em>kWh/month</em> × <em>Rate (₱/kWh)</em></div>
+              <div class="f-note">e.g. 36 × ₱11 = <code>₱396.00/month</code></div>
+            </div>
+          </div>
+          <div class="formula-row">
+            <div class="f-step">Step 4 — PSU loss</div>
+            <div>
+              <div class="f-eq">12V load Wh/day × <em>10%</em></div>
+              <div class="f-note">Switching PSU typical efficiency 85–90%; 10% loss conservative</div>
+            </div>
+          </div>
+          <div class="formula-row">
+            <div class="f-step">Estimated values</div>
+            <div>
+              <div class="f-note" style="color:var(--text-secondary);line-height:1.7">
+                <strong>Peristaltic pumps</strong> — 6W each (500mA @ 12V); Kamoer/Walchem typical<br>
+                <strong>Heater</strong> — 100W; standard aquarium/reservoir heater<br>
+                <strong>Air pump</strong> — 10W; common 220V aquarium air pump (Resun LP-40, Sobo)<br>
+                <strong>Rate</strong> — ₱11/kWh; Meralco avg. residential rate 2024–2025
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ── BOTTOM NAV (mobile) ── -->
+  <nav class="bottom-nav">
+    <a href="index.html"              class="nav-item"><span class="nav-icon">📊</span>Dashboard</a>
+    <a href="fish-monitoring.html"    class="nav-item"><span class="nav-icon">🐠</span>Fish</a>
+    <a href="water-quality.html"      class="nav-item"><span class="nav-icon">💧</span>Water</a>
+    <a href="actuators.html"          class="nav-item"><span class="nav-icon">⚙️</span>Actuators</a>
+    <a href="power-cost.html"         class="nav-item active"><span class="nav-icon">⚡</span>Power</a>
+  </nav>
+
+</div>
+
+<script>
+  /* ── Clock ── */
+  function tick() { document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }
+  setInterval(tick, 1000); tick();
+
+  /* ── Data ── */
+  const COMPONENTS = [
+    { id:1,  name:"ESP32-C5 MCU",              volt:"5V",     watts:0.33,  hrs:12, cat:"ctrl",   est:false, note:"Wi-Fi active" },
+    { id:2,  name:"ESP32-CAM + CH340",         volt:"5V",     watts:0.50,  hrs:12, cat:"ctrl",   est:false, note:"USB programmer" },
+    { id:3,  name:"8-Channel Relay Module",    volt:"5V",     watts:4.00,  hrs:12, cat:"ctrl",   est:false, note:"All 8 coils" },
+    { id:4,  name:"DS18B20 Temp Sensor",       volt:"5V",     watts:0.005, hrs:24, cat:"sensor", est:false, note:"Parasitic mode" },
+    { id:5,  name:"pH Sensor Module",          volt:"5V",     watts:0.050, hrs:24, cat:"sensor", est:false, note:"5–10mA @ 5V" },
+    { id:6,  name:"EC / Salinity Sensor",      volt:"3–5V",   watts:0.020, hrs:24, cat:"sensor", est:false, note:"Signal board V2" },
+    { id:7,  name:"Turbidity Sensor",          volt:"5V",     watts:0.200, hrs:24, cat:"sensor", est:false, note:"40mA max" },
+    { id:8,  name:"HC-SR04 Ultrasonic",        volt:"5V",     watts:0.075, hrs:24, cat:"sensor", est:false, note:"15mA active" },
+    { id:9,  name:"Water Pump (Solar)",        volt:"12V DC", watts:19.00, hrs:12, cat:"act12",  est:false, note:"Rated 19W" },
+    { id:10, name:"Peristaltic (pH Up)",       volt:"12V DC", watts:6.00,  hrs:2,  cat:"act12",  est:true,  note:"~500mA dosing" },
+    { id:11, name:"Peristaltic (pH Down)",     volt:"12V DC", watts:6.00,  hrs:2,  cat:"act12",  est:true,  note:"~500mA dosing" },
+    { id:12, name:"Heater",                    volt:"220V AC",watts:100.0, hrs:12, cat:"ac220",  est:true,  note:"Thermostat ctrl" },
+    { id:13, name:"Air Pump",                  volt:"220V AC",watts:10.0,  hrs:24, cat:"ac220",  est:true,  note:"Runs 24h/day" },
+    { id:14, name:"Power Supply (12V DC)",     volt:"12V DC", watts:null,  hrs:24, cat:"infra",  est:false, note:"~10% PSU loss" },
+    { id:15, name:"Terminal Block",            volt:"—",      watts:0,     hrs:0,  cat:"infra",  est:false, note:"Passive" },
+  ];
+
+  const CAT = {
+    ctrl:   { label:"Controller", color:"#388bfd", bg:"rgba(56,139,253,0.12)" },
+    sensor: { label:"Sensor",     color:"#2dd4bf", bg:"rgba(45,212,191,0.12)" },
+    act12:  { label:"12V Act.",   color:"#fbbf24", bg:"rgba(251,191,36,0.12)" },
+    ac220:  { label:"220V Load",  color:"#f87171", bg:"rgba(248,113,113,0.12)" },
+    infra:  { label:"Infra",      color:"#6b7280", bg:"rgba(107,114,128,0.12)" },
+  };
+
+  let rate = 11;
+
+  function calc12VLoadWh(rows) {
+    return rows.filter(c => c.cat === 'act12' || c.id === 3)
+               .reduce((s,c) => s + c.watts * c.hrs, 0);
+  }
+
+  function calcRows() {
+    const base = COMPONENTS.map(c => ({...c}));
+    const load12wh = calc12VLoadWh(base);
+    return base.map(c => {
+      if (c.watts === null) {
+        const w = (load12wh * 0.10) / 24;
+        return {...c, watts: w, wh: w * 24, cost: w * 24 * 30 / 1000 * rate};
+      }
+      const wh = c.watts * c.hrs;
+      return {...c, wh, cost: wh * 30 / 1000 * rate};
+    });
+  }
+
+  function fW(v)  { return v < 0.01 ? v.toFixed(3) : v < 1 ? v.toFixed(2) : v.toFixed(1); }
+  function fWh(v) { return v < 1 ? v.toFixed(2) : v.toFixed(1); }
+  function fP(v)  { return '₱' + v.toFixed(2); }
+
+  function render() {
+    rate = parseFloat(document.getElementById('rate').value);
+    document.getElementById('rate-out').textContent = '₱' + rate.toFixed(1);
+    document.getElementById('k-rate-sub').textContent = 'at ₱' + rate.toFixed(1) + '/kWh';
+
+    let rows = calcRows();
+    const sort = document.getElementById('sortby').value;
+    if (sort === 'cost')  rows.sort((a,b) => b.cost - a.cost);
+    else if (sort === 'watts') rows.sort((a,b) => b.watts - a.watts);
+    else rows.sort((a,b) => a.cat.localeCompare(b.cat));
+
+    const totalW    = rows.reduce((s,r) => s + r.watts, 0);
+    const totalWh   = rows.reduce((s,r) => s + r.wh, 0);
+    const totalCost = rows.reduce((s,r) => s + r.cost, 0);
+    const maxW      = Math.max(...rows.map(r => r.watts));
+
+    document.getElementById('k-watts').textContent   = totalW.toFixed(1) + 'W';
+    document.getElementById('k-kwh').textContent     = (totalWh/1000).toFixed(2) + ' kWh';
+    document.getElementById('k-monthly').textContent = fP(totalCost);
+    document.getElementById('k-annual').textContent  = fP(totalCost * 12);
+
+    /* Table */
+    document.getElementById('comp-list').innerHTML = rows.map(r => {
+      const cat = CAT[r.cat];
+      const pct = totalCost > 0 ? (r.cost/totalCost*100) : 0;
+      return `
+        <div class="comp-row">
+          <div class="comp-num">${r.id}</div>
+          <div class="comp-info">
+            <div class="comp-name">
+              ${r.name}
+              ${r.est ? '<span class="est-tag">est</span>' : ''}
+              ${r.volt === '220V AC' ? '<span class="ac-badge">220V</span>' : ''}
+            </div>
+            <div class="comp-meta">
+              <span class="cat-pill" style="background:${cat.bg};color:${cat.color}">${cat.label}</span>
+              <span>${r.note}</span>
+            </div>
+          </div>
+          <div class="bar-cell">
+            <div class="mini-bar-wrap">
+              <div class="mini-bar" style="width:${r.watts===0?0:Math.max(3,r.watts/maxW*100).toFixed(1)}%;background:${cat.color}"></div>
+            </div>
+            <span class="mono-r">${fW(r.watts)}</span>
+          </div>
+          <div class="mono-r">${fWh(r.wh)}</div>
+          <div class="cost-r">${fP(r.cost)}</div>
+          <div class="pct-r">${pct.toFixed(1)}%</div>
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('total-row').innerHTML = `
+      <div class="total-label" style="grid-column:1/3">Total · 15 components</div>
+      <div class="mono-r" style="color:var(--text-primary);font-weight:700">${totalW.toFixed(1)}</div>
+      <div class="mono-r" style="color:var(--text-primary);font-weight:700">${totalWh.toFixed(1)}</div>
+      <div class="total-val">${fP(totalCost)}</div>
+      <div class="pct-r" style="color:var(--ok)">100%</div>
+    `;
+
+    /* Bar chart */
+    const chartRows = [...rows].filter(r=>r.cost>0.001).sort((a,b)=>b.cost-a.cost);
+    const maxCost = chartRows[0].cost;
+    document.getElementById('chart-body').innerHTML = chartRows.map(r => {
+      const cat = CAT[r.cat];
+      const w = Math.max(1, (r.cost/maxCost*100));
+      return `
+        <div class="hbar-row">
+          <div class="hbar-name">${r.name}</div>
+          <div class="hbar-wrap">
+            <div class="hbar-fill" style="width:${w.toFixed(1)}%;background:${cat.color}">
+              ${w > 20 ? `<span class="hbar-label">${fP(r.cost)}</span>` : ''}
+            </div>
+          </div>
+          <div class="hbar-cost">${fP(r.cost)}</div>
+        </div>
+      `;
+    }).join('');
+
+    /* Tips */
+    const heaterCost  = rows.find(r=>r.id===12)?.cost || 0;
+    const airCost     = rows.find(r=>r.id===13)?.cost || 0;
+    const pumpCost    = rows.find(r=>r.id===9)?.cost  || 0;
+    const sensorsCost = rows.filter(r=>r.cat==='sensor').reduce((s,r)=>s+r.cost,0);
+    const relayCost   = rows.find(r=>r.id===3)?.cost  || 0;
+    const ac220Cost   = heaterCost + airCost;
+
+    const tips = [
+      { type:'warn', tag:'high impact',  title:'Heater dominates cost',
+        body:`At ~100W, the heater costs ${fP(heaterCost)}/mo. Insulating your reservoir can cut heater runtime by 40–60%.` },
+      { type:'warn', tag:'high impact',  title:`220V loads = ${(ac220Cost/totalCost*100).toFixed(0)}% of total`,
+        body:`Heater + air pump combined: ${fP(ac220Cost)}/mo. Optimize these two before anything else.` },
+      { type:'warn', tag:'quick win',    title:'Cycle the water pump',
+        body:`12h/day continuous costs ${fP(pumpCost)}/mo. A 15-min on/45-min off cycle could drop this to ~${fP(pumpCost*0.25)}/mo.` },
+      { type:'good', tag:'already good', title:'Sensors cost almost nothing',
+        body:`All 5 sensors combined: ${fP(sensorsCost)}/mo. Under 1% of total — no need to optimize here.` },
+      { type:'good', tag:'esp32 tip',    title:'Enable ESP32 deep sleep',
+        body:`Deep sleep drops MCU to <1mA. Set 30–60s wake intervals to cut MCU power cost by up to 80%.` },
+      { type:'warn', tag:'relay waste',  title:'De-energize relay coils',
+        body:`All 8 coils active draws ~4W. De-energize at rest to save ~${fP(relayCost)}/mo with zero hardware change.` },
+    ];
+
+    document.getElementById('tips-grid').innerHTML = tips.map(t => `
+      <div class="tip-card ${t.type==='warn'?'warn-card':'good-card'}">
+        <div class="tip-tag ${t.type==='warn'?'warn-tag':'good-tag'}">${t.tag}</div>
+        <div class="tip-title">${t.title}</div>
+        <div class="tip-body">${t.body}</div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('rate').addEventListener('input', render);
+  document.getElementById('sortby').addEventListener('input', render);
+  render();
+</script>
+</body>
+</html>
