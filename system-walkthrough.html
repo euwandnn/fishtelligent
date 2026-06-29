@@ -3,104 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Fishtelligent | Paano Gumagana</title>
+  <title>Fishtelligent | System Walkthrough</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    .step-card {
-      background: var(--card-bg, #1a2332);
-      border: 1px solid var(--border, #243044);
-      border-radius: 16px;
-      padding: 1.25rem;
-      margin-bottom: 1rem;
-      display: flex;
-      gap: 1.25rem;
-      align-items: flex-start;
-      cursor: pointer;
-      transition: border-color .2s, background .2s;
-    }
-    .step-card:hover { border-color: #14b8a6; }
-    .step-card.active { border-color: #14b8a6; background: rgba(20,184,166,.06); }
-    .step-icon-wrap {
-      width: 64px; height: 64px;
-      border-radius: 16px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2rem;
-      flex-shrink: 0;
-    }
-    .step-content { flex: 1; }
-    .step-num-label {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-      margin-bottom: .25rem;
-    }
-    .step-title { font-size: 1.05rem; font-weight: 700; margin-bottom: .35rem; }
-    .step-simple { font-size: 0.88rem; color: var(--muted, #6b7a99); line-height: 1.65; }
-    .step-expand {
-      margin-top: .75rem;
-      padding-top: .75rem;
-      border-top: 1px solid var(--border, #243044);
-      display: none;
-    }
-    .step-card.active .step-expand { display: block; }
-    .expand-item {
-      display: flex;
-      align-items: flex-start;
-      gap: .6rem;
-      margin-bottom: .5rem;
-      font-size: 0.83rem;
-      color: var(--muted, #6b7a99);
-    }
-    .expand-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: .1rem; }
-
-    .connector {
-      text-align: center;
-      font-size: 1.5rem;
-      color: var(--muted, #6b7a99);
-      margin: -.2rem 0;
-    }
-
-    /* HW Grid */
-    .hw-simple-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: .65rem;
-    }
-    .hw-simple-card {
-      border-radius: 12px;
-      padding: .75rem;
-      text-align: center;
-      border: 1px solid transparent;
-    }
-    .hw-simple-icon { font-size: 1.8rem; margin-bottom: .3rem; }
-    .hw-simple-name { font-size: 0.78rem; font-weight: 700; margin-bottom: .2rem; }
-    .hw-simple-role { font-size: 0.72rem; color: var(--muted, #6b7a99); line-height: 1.4; }
-
-    /* Alert demo */
-    .alert-demo {
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-      margin-bottom: .75rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .alert-demo-icon { font-size: 2rem; flex-shrink: 0; }
-    .alert-demo-text { font-size: 0.9rem; line-height: 1.5; }
-    .alert-demo-title { font-weight: 700; margin-bottom: .2rem; }
-
-    .tip-box {
-      background: rgba(20,184,166,.08);
-      border: 1px solid rgba(20,184,166,.3);
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-      font-size: 0.85rem;
-      color: var(--muted, #6b7a99);
-      line-height: 1.6;
-    }
-    .tip-box strong { color: #14b8a6; }
-  </style>
 </head>
 <body>
 <div class="app-shell">
@@ -115,14 +19,16 @@
         </div>
       </div>
     </div>
+
     <nav class="sidebar-nav">
       <div class="nav-section-label">Main</div>
-      <a href="index.html"              class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
-      <a href="fish-monitoring.html"    class="nav-link"><span class="nav-icon">🐠</span> Fish Monitoring</a>
-      <a href="water-quality.html"      class="nav-link"><span class="nav-icon">💧</span> Water Quality</a>
-      <a href="actuators.html"          class="nav-link"><span class="nav-icon">⚙️</span> Actuators</a>
-      <a href="system-walkthrough.html" class="nav-link active"><span class="nav-icon">🔄</span> Paano Gumagana</a>
+      <a href="index.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="fish-monitoring.html" class="nav-link"><span class="nav-icon">🐠</span> Fish Monitoring</a>
+      <a href="water-quality.html" class="nav-link"><span class="nav-icon">💧</span> Water Quality</a>
+      <a href="actuators.html" class="nav-link"><span class="nav-icon">⚙️</span> Actuators</a>
+      <a href="system-walkthrough.html" class="nav-link active"><span class="nav-icon">🔄</span> System Walkthrough</a>
     </nav>
+
     <div class="sidebar-footer">
       <div class="sys-status"><div class="pulse-dot"></div> System online</div>
     </div>
@@ -134,7 +40,7 @@
         <div class="topbar-brand-icon">🔄</div>
         <div>
           <div class="topbar-title">Fishtelligent</div>
-          <div class="topbar-subtitle">Paano Gumagana ang Sistema</div>
+          <div class="topbar-subtitle">How the System Works</div>
         </div>
       </div>
       <div class="topbar-right">
@@ -145,140 +51,155 @@
 
     <main class="page-content">
       <div class="page-header">
-        <h1 class="page-title">Paano Gumagana ang FishTelligent?</h1>
-        <p class="page-desc">Simple na paliwanag — mula sensor hanggang sa inyong telepono. I-click ang bawat hakbang para sa karagdagang detalye.</p>
+        <h1 class="page-title">System Walkthrough</h1>
+        <p class="page-desc">
+          Learn how FishTelligent monitors your fish tank, detects problems, and sends updates to your phone.
+          Click each step to see more details.
+        </p>
       </div>
 
-      <!-- ── STEPS ── -->
       <div id="steps"></div>
 
-      <!-- ── HARDWARE ── -->
       <div class="card" style="margin-top:1.5rem;">
         <div class="card-header">
-          <div class="card-title"><span class="card-title-icon">🔧</span> Mga Gamit na Kagamitan</div>
+          <div class="card-title"><span class="card-title-icon">🔧</span> System Components</div>
         </div>
         <div class="card-body">
           <div class="hw-simple-grid" id="hwGrid"></div>
         </div>
       </div>
 
-      <!-- ── ALERT GUIDE ── -->
       <div class="card" style="margin-top:1.5rem;">
         <div class="card-header">
-          <div class="card-title"><span class="card-title-icon">🔔</span> Ano ang Ibig Sabihin ng mga Alerto?</div>
+          <div class="card-title"><span class="card-title-icon">🔔</span> Understanding System Alerts</div>
         </div>
         <div class="card-body">
           <div class="alert-demo" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25)">
             <div class="alert-demo-icon">✅</div>
             <div class="alert-demo-text">
-              <div class="alert-demo-title" style="color:#22c55e;">Normal — Ligtas ang mga Isda</div>
-              Lahat ng water quality parameters ay nasa tamang hanay. Walang kailangang gawin. Patuloy na subaybayan ang sistema.
+              <div class="alert-demo-title" style="color:#22c55e;">Normal - Fish are Safe</div>
+              All water quality readings are within the safe range. No action is needed.
             </div>
           </div>
+
           <div class="alert-demo" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25)">
             <div class="alert-demo-icon">⚠️</div>
             <div class="alert-demo-text">
-              <div class="alert-demo-title" style="color:#ef4444;">Alerto — Kailangan ng Aksyon</div>
-              May isang parameter na labas sa ligtas na hanay. Titingnan ng sistema kung alin — halimbawa, "SALINITY: 25 g/L (ligtas: 28–34)". Kumilos agad para maprotektahan ang mga isda.
+              <div class="alert-demo-title" style="color:#ef4444;">Warning - Action Needed</div>
+              One or more water readings are outside the safe range. Check the Water Quality page to see which parameter needs attention.
             </div>
           </div>
+
           <div class="alert-demo" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25)">
             <div class="alert-demo-icon">🤖</div>
             <div class="alert-demo-text">
-              <div class="alert-demo-title" style="color:#f59e0b;">AI Alert — Nahuli ng AI ang Problema</div>
-              Ang AI (Isolation Forest) ay nakatuklas ng hindi normal na pattern — kahit hindi pa lumalagpas sa threshold. Ito ay maagang babala bago pa lumala ang tubig.
+              <div class="alert-demo-title" style="color:#f59e0b;">AI Alert - Possible Problem Detected</div>
+              The AI found an unusual water condition, even before it reached the warning level. This gives you time to act early.
             </div>
           </div>
 
           <div class="tip-box" style="margin-top:.75rem;">
-            💡 <strong>Tip:</strong> Kapag may alerto — buksan ang <strong>Water Quality</strong> page para makita kung anong parameter ang may problema at kung gaano ito kalayo sa ligtas na hanay.
+            💡 <strong>Tip:</strong> If you receive an alert, open the <strong>Water Quality</strong> page to see which water parameter needs attention and follow the recommended action.
           </div>
         </div>
       </div>
-
     </main>
   </div>
 
   <nav class="bottom-nav">
-    <a href="index.html"           class="nav-item"><span class="nav-icon">📊</span>Dashboard</a>
+    <a href="index.html" class="nav-item"><span class="nav-icon">📊</span>Dashboard</a>
     <a href="fish-monitoring.html" class="nav-item"><span class="nav-icon">🐠</span>Fish</a>
-    <a href="water-quality.html"   class="nav-item"><span class="nav-icon">💧</span>Water</a>
-    <a href="actuators.html"       class="nav-item"><span class="nav-icon">⚙️</span>Actuators</a>
+    <a href="water-quality.html" class="nav-item"><span class="nav-icon">💧</span>Water</a>
+    <a href="actuators.html" class="nav-item"><span class="nav-icon">⚙️</span>Actuators</a>
   </nav>
 </div>
 
 <script>
-  function tick() { document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }
-  setInterval(tick, 1000); tick();
+  function tick() {
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+  }
+  setInterval(tick, 1000);
+  tick();
 
   const steps = [
     {
-      icon: '🌡', color: 'rgba(20,184,166,.15)', border: '#14b8a6',
-      num: 'Hakbang 1',
-      title: 'Ang mga sensor ay sumusukat ng tubig',
-      simple: 'Sa loob ng fish tank, may mga maliit na sensor na palaging nagmamasid sa tubig — temperatura, pH, alat, kalinisan, at taas ng tubig. Nagtatrabaho sila 24 oras, 7 araw sa isang linggo — kahit tulog kayo.',
+      icon: '🌡',
+      color: 'rgba(20,184,166,.15)',
+      border: '#14b8a6',
+      num: 'Step 1',
+      title: 'Sensors Check the Water',
+      simple: 'The sensors continuously check the water inside the fish tank. They measure temperature, pH, salinity, water clarity, and water level 24 hours a day, even when no one is watching.',
       details: [
-        { icon:'🌡', text:'Temperature sensor — sumusukat ng init ng tubig (dapat 27.6–30.2°C)' },
-        { icon:'⚗', text:'pH sensor — sumusukat ng asido/alkalina ng tubig (dapat 7.0–7.91)' },
-        { icon:'🧂', text:'Salinity sensor — sumusukat ng alat ng tubig (dapat 28–34 g/L)' },
-        { icon:'🔍', text:'Turbidity sensor — sumusukat ng kalinis ng tubig (dapat 0–25 NTU)' },
-        { icon:'🌊', text:'Water level sensor — sumusukat ng taas ng tubig (dapat 40–95%)' },
+        { icon:'🌡', text:'Temperature Sensor - Measures the water temperature. Safe range: 27.6-30.2°C.' },
+        { icon:'⚗', text:'pH Sensor - Measures the acidity of the water. Safe range: 7.0-7.91.' },
+        { icon:'🧂', text:'Salinity Sensor - Measures the salt level. Safe range: 28-34 g/L.' },
+        { icon:'🔍', text:'Turbidity Sensor - Measures how clear or dirty the water is. Safe range: 0-25 NTU.' },
+        { icon:'🌊', text:'Water Level Sensor - Measures the water level. Safe range: 40-95%.' }
       ]
     },
     {
-      icon: '⚡', color: 'rgba(139,92,246,.15)', border: '#8b5cf6',
-      num: 'Hakbang 2',
-      title: 'Ang ESP32 ay nagtitipon ng lahat ng datos',
-      simple: 'Ang ESP32 ay parang "utak" ng sistema. Binabasa nito ang lahat ng sensor tuwing 5 segundo, at sinusuri kung may mali. Kung may problema — automatic na nagpapatakbo ng mga aparato tulad ng water pump o heater.',
+      icon: '⚡',
+      color: 'rgba(139,92,246,.15)',
+      border: '#8b5cf6',
+      num: 'Step 2',
+      title: 'ESP32 Collects the Data',
+      simple: 'The ESP32 is the main controller of the system. It reads all sensor data every 5 seconds and automatically controls the equipment when needed.',
       details: [
-        { icon:'💧', text:'Nagpapatakbo ng water pump kapag mababa ang tubig' },
-        { icon:'🔥', text:'Nagpapatakbo ng heater kapag malamig ang tubig' },
-        { icon:'💨', text:'Laging naka-on ang aerator para sa oxygen ng isda' },
-        { icon:'📡', text:'Nagpapadala ng datos sa internet tuwing 5 segundo' },
+        { icon:'💧', text:'Turns on the water pump when the water level is low.' },
+        { icon:'🔥', text:'Turns on the heater when the water is too cold.' },
+        { icon:'💨', text:'Keeps the air pump running to supply oxygen for the fish.' },
+        { icon:'📡', text:'Sends sensor data to the internet every 5 seconds.' }
       ]
     },
     {
-      icon: '📡', color: 'rgba(59,130,246,.15)', border: '#3b82f6',
-      num: 'Hakbang 3',
-      title: 'Ang datos ay ipinapadala sa internet',
-      simple: 'Sa pamamagitan ng WiFi, ang datos mula sa mga sensor ay ipinapadala sa cloud (internet). Kahit walang signal saglit — hindi nawawala ang datos. Ini-store muna sa memoria ng ESP32 at ipinapadala kapag bumalik ang koneksyon.',
+      icon: '📡',
+      color: 'rgba(59,130,246,.15)',
+      border: '#3b82f6',
+      num: 'Step 3',
+      title: 'Data is Sent to the Cloud',
+      simple: 'The ESP32 sends the sensor readings to the cloud using Wi-Fi. If the internet is unavailable, the data is saved temporarily and uploaded once the connection returns.',
       details: [
-        { icon:'📶', text:'Gumagamit ng WiFi para mag-upload ng datos' },
-        { icon:'💾', text:'Kapag walang internet — ini-store ang datos at ipinapadala kapag bumalik' },
-        { icon:'🔒', text:'Ligtas ang datos — gumagamit ng HTTPS na koneksyon' },
+        { icon:'📶', text:'Uses Wi-Fi to upload sensor data.' },
+        { icon:'💾', text:'Stores data when there is no internet connection.' },
+        { icon:'🔒', text:'Uploads data securely using HTTPS.' }
       ]
     },
     {
-      icon: '🤖', color: 'rgba(245,158,11,.15)', border: '#f59e0b',
-      num: 'Hakbang 4',
-      title: 'Ang AI ay nag-aanalisa ng datos',
-      simple: 'Ang aming AI model (Isolation Forest) ay tinitingnan ang bawat sensor reading at nagde-desisyon — normal ba ito o may problema? Nakaka-detect ito ng problema nang mas mabilis kaysa tao — sa loob lamang ng 3 segundo.',
+      icon: '🤖',
+      color: 'rgba(245,158,11,.15)',
+      border: '#f59e0b',
+      num: 'Step 4',
+      title: 'AI Checks for Problems',
+      simple: 'The AI analyzes every sensor reading and checks if the water condition is normal or abnormal. It helps detect possible problems before they become serious.',
       details: [
-        { icon:'✅', text:'Kung normal — "All parameters normal" ang lalabas sa dashboard' },
-        { icon:'⚠️', text:'Kung may problema — "Anomaly Detected" at sinasabi kung anong parameter ang may mali' },
-        { icon:'📊', text:'95.89% accurate ang AI — hindi ito nagkakamali ng malaki' },
-        { icon:'🎯', text:'100% nakaka-detect ng lahat ng mapanganib na sitwasyon' },
+        { icon:'✅', text:'Shows "All Parameters Normal" when everything is safe.' },
+        { icon:'⚠️', text:'Shows an alert when a water parameter is outside the safe range.' },
+        { icon:'📊', text:'AI analyzes the readings to help identify unusual water conditions.' },
+        { icon:'🎯', text:'Helps vendors respond early before the fish are affected.' }
       ]
     },
     {
-      icon: '📱', color: 'rgba(34,197,94,.15)', border: '#22c55e',
-      num: 'Hakbang 5',
-      title: 'Nakikita ninyo ang resulta sa inyong telepono',
-      simple: 'Sa inyong telepono o tablet, makikita ninyo ang lahat ng sensor readings — real-time, updated tuwing 3 segundo. Kapag may alerto — makikita ninyo agad kung anong parameter ang may problema at gaano kalayo ito sa ligtas na hanay.',
+      icon: '📱',
+      color: 'rgba(34,197,94,.15)',
+      border: '#22c55e',
+      num: 'Step 5',
+      title: 'View Everything on Your Phone',
+      simple: 'You can monitor the fish tank using your phone or tablet. The dashboard updates every few seconds, so you can quickly see the water condition and any alerts.',
       details: [
-        { icon:'💧', text:'Water Quality page — lahat ng sensor readings' },
-        { icon:'🐠', text:'Fish Monitoring page — live camera feed ng tank' },
-        { icon:'⚙️', text:'Actuators page — status ng lahat ng aparato' },
-        { icon:'📊', text:'Dashboard — buod ng lahat ng impormasyon' },
+        { icon:'💧', text:'Water Quality page - View all water readings.' },
+        { icon:'🐠', text:'Fish Monitoring page - Watch the live camera.' },
+        { icon:'⚙️', text:'Actuators page - Check the status of the equipment.' },
+        { icon:'📊', text:'Dashboard - View a summary of the whole system.' }
       ]
-    },
+    }
   ];
 
   const stepsDiv = document.getElementById('steps');
+
   steps.forEach((s, i) => {
     const card = document.createElement('div');
     card.className = 'step-card';
-    card.style.borderColor = s.border.replace('1)', '0.3)');
+    card.style.borderColor = s.border;
 
     const detailsHtml = s.details.map(d =>
       `<div class="expand-item"><span class="expand-icon">${d.icon}</span><span>${d.text}</span></div>`
@@ -311,30 +232,33 @@
     }
   });
 
-  // Hardware
   const hw = [
-    { icon:'🌡', name:'Temperature Sensor', role:'Sumusukat ng init ng tubig', color:'rgba(20,184,166,.1)', border:'rgba(20,184,166,.3)' },
-    { icon:'⚗', name:'pH Sensor', role:'Sumusukat ng asido ng tubig', color:'rgba(20,184,166,.1)', border:'rgba(20,184,166,.3)' },
-    { icon:'🧂', name:'Salinity Sensor', role:'Sumusukat ng alat ng tubig', color:'rgba(20,184,166,.1)', border:'rgba(20,184,166,.3)' },
-    { icon:'🔍', name:'Turbidity Sensor', role:'Sumusukat ng kalinis ng tubig', color:'rgba(20,184,166,.1)', border:'rgba(20,184,166,.3)' },
-    { icon:'🌊', name:'Water Level Sensor', role:'Sumusukat ng taas ng tubig', color:'rgba(20,184,166,.1)', border:'rgba(20,184,166,.3)' },
-    { icon:'📷', name:'Camera (ESP32-CAM)', role:'Nagre-record ng live video ng isda', color:'rgba(139,92,246,.1)', border:'rgba(139,92,246,.3)' },
-    { icon:'⚡', name:'ESP32 (Utak)', role:'Nagbabasa ng lahat ng sensor', color:'rgba(139,92,246,.1)', border:'rgba(139,92,246,.3)' },
-    { icon:'🔌', name:'Relay Module', role:'Nagko-kontrol ng mga aparato', color:'rgba(139,92,246,.1)', border:'rgba(139,92,246,.3)' },
-    { icon:'💧', name:'Water Pump', role:'Nagpupuno ng tubig', color:'rgba(59,130,246,.1)', border:'rgba(59,130,246,.3)' },
-    { icon:'🔥', name:'Heater', role:'Nagpapainit ng tubig', color:'rgba(59,130,246,.1)', border:'rgba(59,130,246,.3)' },
-    { icon:'💨', name:'Air Pump', role:'Nagbibigay ng oxygen sa isda', color:'rgba(59,130,246,.1)', border:'rgba(59,130,246,.3)' },
-    { icon:'🧪', name:'pH Pumps (x2)', role:'Nagtatamis/nagpapaasim ng tubig', color:'rgba(59,130,246,.1)', border:'rgba(59,130,246,.3)' },
-    { icon:'⚡', name:'Power Supply', role:'Pinagkukunan ng kuryente', color:'rgba(100,100,100,.1)', border:'rgba(100,100,100,.3)' },
+    { icon:'🌡', name:'Temperature Sensor', role:'Measures water temperature', color:'rgba(20,184,166,.1)', border:'rgba(20,184,166,.3)' },
+    { icon:'⚗', name:'pH Sensor', role:'Measures water pH', color:'rgba(20,184,166,.1)', border:'rgba(20,184,166,.3)' },
+    { icon:'🧂', name:'Salinity Sensor', role:'Measures salt level', color:'rgba(20,184,166,.1)', border:'rgba(20,184,166,.3)' },
+    { icon:'🔍', name:'Turbidity Sensor', role:'Measures water clarity', color:'rgba(20,184,166,.1)', border:'rgba(20,184,166,.3)' },
+    { icon:'🌊', name:'Water Level Sensor', role:'Measures water level', color:'rgba(20,184,166,.1)', border:'rgba(20,184,166,.3)' },
+    { icon:'📷', name:'Camera (ESP32-CAM)', role:'Live fish monitoring', color:'rgba(139,92,246,.1)', border:'rgba(139,92,246,.3)' },
+    { icon:'⚡', name:'ESP32', role:'Main controller', color:'rgba(139,92,246,.1)', border:'rgba(139,92,246,.3)' },
+    { icon:'🔌', name:'Relay Module', role:'Controls the equipment', color:'rgba(139,92,246,.1)', border:'rgba(139,92,246,.3)' },
+    { icon:'💧', name:'Water Pump', role:'Adds water', color:'rgba(59,130,246,.1)', border:'rgba(59,130,246,.3)' },
+    { icon:'🔥', name:'Heater', role:'Warms the water', color:'rgba(59,130,246,.1)', border:'rgba(59,130,246,.3)' },
+    { icon:'💨', name:'Air Pump', role:'Supplies oxygen', color:'rgba(59,130,246,.1)', border:'rgba(59,130,246,.3)' },
+    { icon:'🧪', name:'pH Pumps (x2)', role:'Adjusts water pH', color:'rgba(59,130,246,.1)', border:'rgba(59,130,246,.3)' },
+    { icon:'⚡', name:'Power Supply', role:'Provides power', color:'rgba(100,100,100,.1)', border:'rgba(100,100,100,.3)' }
   ];
 
   const hwGrid = document.getElementById('hwGrid');
+
   hw.forEach(h => {
     const card = document.createElement('div');
     card.className = 'hw-simple-card';
     card.style.background = h.color;
     card.style.borderColor = h.border;
-    card.innerHTML = `<div class="hw-simple-icon">${h.icon}</div><div class="hw-simple-name">${h.name}</div><div class="hw-simple-role">${h.role}</div>`;
+    card.innerHTML = `
+      <div class="hw-simple-icon">${h.icon}</div>
+      <div class="hw-simple-name">${h.name}</div>
+      <div class="hw-simple-role">${h.role}</div>`;
     hwGrid.appendChild(card);
   });
 </script>
