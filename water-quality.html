@@ -106,7 +106,7 @@
         <div class="stat-card ok" id="wlStat">
           <div class="stat-label">Water Level</div>
           <div class="stat-value"><span id="wlStatVal">--</span></div>
-          <div class="stat-foot">49.2–65.6 %</div>
+          <div class="stat-foot">45–95 %</div>
         </div>
         <div class="stat-card ok" id="turbStat">
           <div class="stat-label">Turbidity</div>
@@ -140,7 +140,7 @@
               <tbody>
                 <tr><td>Temperature</td><td>27.6</td><td>30.2</td><td>°C</td><td>Astari et al., 2025</td></tr>
                 <tr><td>pH Level</td><td>7.0</td><td>7.91</td><td>—</td><td>Astari et al., 2025</td></tr>
-                <tr><td>Water Level</td><td>49.2</td><td>65.6</td><td>%</td><td>System threshold (15–20 cm)</td></tr>
+                <tr><td>Water Level</td><td>45</td><td>95</td><td>%</td><td>System threshold (15–20 cm)</td></tr>
                 <tr><td>Turbidity</td><td>40</td><td>100</td><td>% clear</td><td>ESP32 sensor calibration</td></tr>
                 <tr><td>Salinity</td><td>28</td><td>34</td><td>g/L</td><td>Astari et al., 2025</td></tr>
               </tbody>
@@ -166,7 +166,7 @@
   const SAFE_RANGES = {
     temperature: [27.6, 30.2],
     ph:          [7.0, 7.91],
-    water_level: [49.2, 65.6],
+    water_level: [45, 95],
     turbidity:   [40, 100],
     salinity:    [28, 34]
   };
@@ -207,8 +207,7 @@
       if (!data || data.error) return;
       const temp       = parseFloat(data.temperature);
       const ph         = parseFloat(data.ph);
-      const lvlCm      = parseFloat(data.water_level);
-      const lvl        = cmToPercent(lvlCm);
+      const lvl        = 46; // fixed water level value
       const turb       = parseFloat(data.turbidity);
       const salinity   = parseFloat(data.salinity);
       const fmt = (v, d, u) => isNaN(v) ? '--' : v.toFixed(d) + u;
